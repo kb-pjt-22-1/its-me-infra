@@ -6,7 +6,7 @@ itsme 프로젝트의 로컬 개발용 인프라(MySQL, Redis 등) 설정 모음
 
 ```bash
 cd mysql
-cp .env.example .env   # 값 채우기
+.env   # 값 채우기
 docker compose up -d
 ```
 
