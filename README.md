@@ -12,3 +12,13 @@ docker compose up -d
 
 - 스키마: [`mysql/init/01_schema.sql`](mysql/init/01_schema.sql)
 - 접속: `localhost:3306`, DB `benepay`
+
+## Redis
+
+```bash
+cd redis
+.env   # 값 채우기
+docker compose up -d
+```
+
+- 접속: `localhost:6379`, 비밀번호 인증(`requirepass`) 필수
