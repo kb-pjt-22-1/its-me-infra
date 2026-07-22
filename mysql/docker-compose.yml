@@ -1,0 +1,28 @@
+services:
+  mysql:
+    image: mysql:8.0                # mysql 8.0 이미지
+    container_name: benepay-mysql   # 컨테이너 이름
+    restart: unless-stopped         # 컨테이너 종료 시 재시작
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # 루트 비밀번호
+      MYSQL_DATABASE: ${MYSQL_DATABASE}           # 데이터베이스 이름
+      MYSQL_USER: ${MYSQL_USER}                   # 사용자 이름
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}           # 비밀번호
+      TZ: Asia/Seoul                # 시간대
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"  # 3306 포트 포워딩
+    command:
+      - --character-set-server=utf8mb4                        # utf8mb4 문자 설정
+      - --collation-server=utf8mb4_unicode_ci                 # utf8mb4_unicode_ci 문자 설정
+      - --default-authentication-plugin=mysql_native_password # mysql_native_password 인증 설정
+    volumes:
+      - mysql-data:/var/lib/mysql                             # 데이터 저장 경로
+      - ./init:/docker-entrypoint-initdb.d                    # 초기 데이터 저장 경로(초기 데이터 설정)       
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"] # 헬스 체크 명령어
+      interval: 5s   # 5초마다 헬스 체크
+      timeout: 5s    # 5초 동안 헬스 체크 실패하면 실패로 간주
+      retries: 10    # 10번 실패하면 컨테이너 재시작
+
+volumes:
+  mysql-data:
