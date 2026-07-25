@@ -28,6 +28,8 @@ docker compose --profile local up -d
 - Redis: 접속 `localhost:6379`
 - `app`/`frontend`는 GHCR에서 `${IMAGE_TAG:-latest}` / `${FRONTEND_IMAGE_TAG:-latest}` 태그를 pull합니다.
   패키지가 private면 최초 1회 `docker login ghcr.io` 로그인이 필요합니다 (PAT에 `read:packages` 스코프 필요).
+- `dev` 브랜치에 push되면 `its-me-backend`/`its-me-frontend`의 CI가 `dev`, `dev-<sha>` 태그로 이미지를 올립니다.
+  자동 배포 대상은 아니고, 개발자가 로컬에서 `.env`의 `IMAGE_TAG=dev`/`FRONTEND_IMAGE_TAG=dev`로 pull해서 확인하는 용도입니다.
 
 새 이미지가 올라온 뒤 다시 받아 재시작하려면:
 
