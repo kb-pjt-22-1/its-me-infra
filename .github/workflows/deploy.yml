@@ -1,0 +1,54 @@
+name: Deploy to EC2
+
+# 트리거 방법 두 가지:
+# 1) its-me-backend / its-me-frontend 의 배포 워크플로우가 이미지를 GHCR에 push한 뒤
+#    repository_dispatch(type: deploy)로 이 워크플로우를 호출 (image_tag를 payload로 전달)
+# 2) 수동 배포가 필요할 때 Actions 탭에서 workflow_dispatch로 직접 실행
+on:
+  repository_dispatch:
+    types: [deploy]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "its-me-backend 이미지 태그"
+        required: false
+        default: latest
+      frontend_image_tag:
+        description: "its-me-frontend 이미지 태그"
+        required: false
+        default: latest
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ github.event.client_payload.image_tag || inputs.image_tag || 'latest' }}
+      FRONTEND_IMAGE_TAG: ${{ github.event.client_payload.frontend_image_tag || inputs.frontend_image_tag || 'latest' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copy deploy files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          source: "docker-compose.yml,mysql/init/*,nginx/user_conf.d/*"
+          target: ${{ secrets.EC2_APP_DIR }}
+
+      - name: Pull images & restart via docker compose
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          envs: IMAGE_TAG,FRONTEND_IMAGE_TAG
+          script: |
+            cd ${{ secrets.EC2_APP_DIR }}
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ secrets.GHCR_ACTOR }} --password-stdin
+            docker compose --profile prod pull
+            docker compose --profile prod up -d
+            docker image prune -f
