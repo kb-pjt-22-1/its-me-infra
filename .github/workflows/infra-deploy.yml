@@ -1,0 +1,113 @@
+name: Deploy Infra Services (nginx/mysql/redis)
+
+# 이 레포(nginx 설정, mysql/init, docker-compose.yml)가 main에 push되면
+# infra가 담당하는 서비스만 자동으로 재배포한다. backend/frontend 컨테이너는 건드리지 않는다
+# (그건 각 앱 레포의 main push -> repository_dispatch가 담당, deploy.yml 참고).
+#
+# 주의: mysql/init/01_schema.sql이 DROP DATABASE IF EXISTS로 시작하기 때문에,
+# 이 워크플로우가 실행될 때마다 benepay DB를 통째로 지우고 스키마+목데이터를 다시 만든다.
+# 목데이터 단계에서만 쓰는 방식이며, 실 사용자 데이터가 쌓이면 증분 마이그레이션으로 바꿔야 한다.
+on:
+  push:
+    branches: [main]
+    paths:
+      - docker-compose.yml
+      - nginx/**
+      - mysql/init/**
+      - .github/workflows/infra-deploy.yml
+
+concurrency:
+  group: deploy-ec2
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+      MYSQL_USER: ${{ secrets.MYSQL_USER }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+      MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
+      REDIS_PORT: ${{ secrets.REDIS_PORT }}
+      CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 이 워크플로우는 docker-compose.yml/nginx/**/mysql/init/** 중 하나만 바뀌어도 실행되므로,
+      # 각 서비스 재배포는 그 서비스와 관련된 경로가 이 push에서 실제로 바뀐 경우에만 돌게 막는다.
+      # redis는 전용 파일이 없어서 docker-compose.yml 변경 여부로만 판단한다(오탐 가능, 미탐은 없음).
+      - name: Detect which services changed
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            mysql:
+              - 'mysql/init/**'
+            nginx:
+              - 'nginx/**'
+              - 'docker-compose.yml'
+            redis:
+              - 'docker-compose.yml'
+
+      - name: Copy deploy files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          source: "docker-compose.yml,mysql/init/*,nginx/benepay.conf"
+          target: ${{ secrets.EC2_APP_DIR }}
+
+      - name: Redeploy nginx / mysql / redis
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          envs: MYSQL_DATABASE,MYSQL_USER,MYSQL_PASSWORD,MYSQL_ROOT_PASSWORD,MYSQL_PORT,REDIS_PORT,CERTBOT_EMAIL
+          script: |
+            set -e
+            cd ${{ secrets.EC2_APP_DIR }}
+
+            # redis: 상태 없는 캐시라 완전히 내렸다 올려도 안전.
+            if [ "${{ steps.changes.outputs.redis }}" = "true" ]; then
+              echo "redis 관련 변경 감지 -> 재배포"
+              docker compose --profile prod pull redis
+              docker compose --profile prod down redis
+              docker compose --profile prod up -d --wait redis
+            else
+              echo "redis 관련 변경 없음 -> 스킵"
+            fi
+
+            # mysql: 컨테이너는 항상 띄워두기만 한다 (redis/nginx와 달리 down은 하지 않음).
+            docker compose --profile prod up -d --wait mysql
+
+            # SQL 재적용(DROP DATABASE 포함)은 mysql/init/**이 이 push에서 실제로 바뀐 경우에만.
+            # docker-entrypoint-initdb.d는 데이터 볼륨이 비어있을 때 딱 한 번만 실행되므로,
+            # 스키마/시드 변경을 반영하려면 컨테이너가 떠 있는 채로 직접 실행해야 한다.
+            if [ "${{ steps.changes.outputs.mysql }}" = "true" ]; then
+              echo "mysql/init 변경 감지 -> 스키마/시드 재적용"
+              docker compose exec -T -e MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql \
+                mysql -uroot < mysql/init/01_schema.sql
+              docker compose exec -T -e MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql \
+                mysql -uroot < mysql/init/02_seed.sql
+            else
+              echo "mysql/init 변경 없음 -> SQL 재적용 스킵"
+            fi
+
+            # nginx: backend/frontend가 이미 떠 있어야 하는 의존관계라 마지막에 처리.
+            # 바인드 마운트된 conf 파일 내용 변경은 compose가 자동 감지하지 못하므로 완전히 재기동한다.
+            if [ "${{ steps.changes.outputs.nginx }}" = "true" ]; then
+              echo "nginx 관련 변경 감지 -> 재배포"
+              docker compose --profile prod pull nginx
+              docker compose --profile prod down nginx
+              docker compose --profile prod up -d --wait nginx
+            else
+              echo "nginx 관련 변경 없음 -> 스킵"
+            fi
+
+            docker image prune -f
