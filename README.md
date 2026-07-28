@@ -7,7 +7,7 @@ GHCR에 push하고, 이 레포는 그 이미지를 **어떻게 실행/배포할�
 ```
 its-me-infra/
 ├── docker-compose.yml         # 실행 파일 (local / prod profile)
-├── .env.example                # 값 채우고 .env로 복사해서 사용
+├── .env                        # git에는 없음, 직접 생성 (아래 변수 참고)
 ├── nginx/
 │   ├── local.conf              # --profile local 용 (TLS 없음)
 │   └── user_conf.d/benepay.conf # --profile prod 용 (Let's Encrypt)
@@ -19,7 +19,6 @@ its-me-infra/
 
 ```bash
 cd its-me-infra
-cp .env.example .env   # 값 채우기
 docker compose --profile local up -d
 # 접속: http://localhost:8080  (/api/* -> app, 그 외 -> frontend)
 ```
