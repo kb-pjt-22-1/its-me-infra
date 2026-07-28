@@ -1,4 +1,6 @@
 services:
+
+  # nginx 이미지
   nginx:
     image: jonasal/nginx-certbot:latest
     profiles: ["prod"]
@@ -10,12 +12,29 @@ services:
       - "443:443"
     volumes:
       - nginx_secrets:/etc/letsencrypt
-      - ./nginx/user_conf.d:/etc/nginx/user_conf.d:ro
+      # nginx-certbot 이미지가 user_conf.d의 server_name을 읽어 인증서 발급 도메인을 정한다
+      - ./nginx/benepay.conf:/etc/nginx/user_conf.d/benepay.conf:ro
     depends_on:
-      - app
+      - backend
       - frontend
 
-  app:
+  # 로컬 전용 (TLS 없음). benepay.site 실제 인증서가 없는 로컬 환경에서
+  # 운영용 nginx 대신 backend/frontend를 라우팅합니다.
+  #   docker compose --profile local up -d
+  #   접속: http://localhost:8080  (/api/* -> backend, 그 외 -> frontend)
+  local-nginx:
+    image: nginx:alpine
+    profiles: [ "local" ]
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/local.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+      - frontend
+
+  backend:
     image: ghcr.io/kb-pjt-22-1/its-me-backend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
@@ -24,8 +43,10 @@ services:
       DB_USERNAME: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
       REDIS_HOST: redis
-    env_file:
-      - .env
+      JWT_SECRET: ${JWT_SECRET}
+      PORTONE_IMP_KEY: ${PORTONE_IMP_KEY}
+      PORTONE_IMP_SECRET: ${PORTONE_IMP_SECRET}
+      DI_HASH_SALT: ${DI_HASH_SALT}
     depends_on:
       mysql:
         condition: service_healthy
@@ -36,22 +57,6 @@ services:
     image: ghcr.io/kb-pjt-22-1/its-me-frontend:${FRONTEND_IMAGE_TAG:-latest}
     restart: unless-stopped
 
-  # 로컬 전용 (TLS 없음). benepay.site 실제 인증서가 없는 로컬 환경에서
-  # 운영용 nginx 대신 app/frontend를 라우팅합니다.
-  #   docker compose --profile local up -d
-  #   접속: http://localhost:8080  (/api/* -> app, 그 외 -> frontend)
-  local-nginx:
-    image: nginx:alpine
-    profiles: ["local"]
-    restart: unless-stopped
-    ports:
-      - "8080:80"
-    volumes:
-      - ./nginx/local.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      - app
-      - frontend
-
   mysql:
     image: mysql:8.4
     restart: unless-stopped
@@ -61,7 +66,8 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      - "3306:3306"
+      # 기본 포트(3306)를 그대로 안 쓰고 secret으로 관리 — 자동 스캔 노출 최소화
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
       - mysql-data:/var/lib/mysql
       - ./mysql/init:/docker-entrypoint-initdb.d:ro
@@ -75,7 +81,7 @@ services:
     image: redis:7
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis-data:/data
     healthcheck:
