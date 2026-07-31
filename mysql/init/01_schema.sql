@@ -1,3 +1,6 @@
+-- Docker에서 MySQL 띄울 시 한글 깨짐 문제 해결 설정 --
+SET NAMES utf8mb4;
+
 DROP DATABASE IF EXISTS benepay;
 
 CREATE DATABASE benepay
