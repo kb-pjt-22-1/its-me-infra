@@ -40,6 +40,8 @@ INSERT INTO common_codes (code, group_code, code_name, sort_order, is_active) VA
                                                                                   ('USER', 'USER_ROLE', '일반 사용자', 1, 1),
                                                                                   ('ADMIN', 'USER_ROLE', '관리자', 2, 1);
 
+INSERT INTO `encryption_keys` VALUES (1,'CI','ZHsppXZssP/iNxL0DhGMYRpfzs9ksDslBH+j1E8UeVU=','AES256',1,'2026-07-28 17:45:12');
+
 INSERT INTO card_variants (card_variant_id, card_network) VALUES
                                                               ('01', 'DOMESTIC'),
                                                               ('02', 'VISA'),
@@ -77,19 +79,222 @@ INSERT INTO merchant_brands (brand_id, brand_code, brand_name, brand_logo) VALUE
                                                                                (8, 'LOTTE_MART', '롯데마트', 'https://cdn.benepay.com/brands/lotte-mart.png'),
                                                                                (9, 'HOMEPLUS', '홈플러스', 'https://cdn.benepay.com/brands/homeplus.png');
 
+
+-- 일반 사용자 목데이터
 INSERT INTO users
-(user_id, login_id, login_password_hash, pin_hash, name, phone_number, birth_date, role, di, ci_encrypted, created_at, is_deleted, fcm_token)
+(
+    user_id,
+    login_id,
+    login_password_hash,
+    pin_hash,
+    name,
+    phone_number,
+    birth_date,
+    role,
+    di,
+    ci_encrypted,
+    created_at,
+    is_deleted,
+    fcm_token
+)
 VALUES
-    (1, 'hong123', '$2a$10$mockHashValueForHongGildong0000000000000000000000000', '$2a$10$mockPinHash1',
-     '홍길동', '01012345678', '19900101', 'USER',
-     'di_mock_0000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-     'ci_encrypted_mock_AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNN',
-     '2026-01-10 09:00:00', 0, 'fcm_token_mock_device_a1b2c3'),
-    (2, 'kim456', '$2a$10$mockHashValueForKimYuna00000000000000000000000000000', NULL,
-     '김유나', '01098765432', '19950505', 'USER',
-     'di_mock_1111111111111111111111111111111111111111111111111111111111111111111111111111111111',
-     'ci_encrypted_mock_ZZZZYYYYXXXXWWWWVVVVUUUUTTTTSSSSRRRRQQQQPPPPOOOONNNN',
-     '2026-02-15 14:30:00', 0, 'fcm_token_mock_device_x9y8z7');
+    (
+        1,
+        'hong123',
+        '$2a$10$mockHashValueForHongGildong0000000000000000000000000',
+        '$2a$10$mockPinHash1',
+        '홍길동',
+        '01012345678',
+        '19900101',
+        'USER',
+        'di_mock_0000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        'ci_encrypted_mock_AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNN',
+        '2026-01-10 09:00:00',
+        FALSE,
+        'fcm_token_mock_device_a1b2c3'
+    ),
+    (
+        2,
+        'kim456',
+        '$2a$10$mockHashValueForKimYuna00000000000000000000000000000',
+        NULL,
+        '김유나',
+        '01098765432',
+        '19950505',
+        'USER',
+        'di_mock_1111111111111111111111111111111111111111111111111111111111111111111111111111111111',
+        'ci_encrypted_mock_ZZZZYYYYXXXXWWWWVVVVUUUUTTTTSSSSRRRRQQQQPPPPOOOONNNN',
+        '2026-02-15 14:30:00',
+        FALSE,
+        'fcm_token_mock_device_x9y8z7'
+    )
+    ON DUPLICATE KEY UPDATE
+                         login_id = VALUES(login_id),
+                         name = VALUES(name),
+                         phone_number = VALUES(phone_number),
+                         is_deleted = VALUES(is_deleted);
+
+
+-- 개발자 로그인용 계정
+INSERT INTO users
+(
+    login_id,
+    login_password_hash,
+    pin_hash,
+    name,
+    phone_number,
+    birth_date,
+    role,
+    di,
+    ci_encrypted,
+    created_at,
+    is_deleted,
+    fcm_token
+)
+VALUES
+    (
+        'dev1',
+        '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!',
+        NULL,
+        '개발자1',
+        NULL,
+        '19900101',
+        'USER',
+        'dev_di_slot_1',
+        'dev_ci_slot_1',
+        NOW(),
+        FALSE,
+        NULL
+    ),
+    (
+        'dev2',
+        '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!',
+        NULL,
+        '개발자2',
+        NULL,
+        '19900102',
+        'USER',
+        'dev_di_slot_2',
+        'dev_ci_slot_2',
+        NOW(),
+        FALSE,
+        NULL
+    ),
+    (
+        'dev3',
+        '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!',
+        NULL,
+        '개발자3',
+        NULL,
+        '19900103',
+        'USER',
+        'dev_di_slot_3',
+        'dev_ci_slot_3',
+        NOW(),
+        FALSE,
+        NULL
+    ),
+    (
+        'dev4',
+        '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!',
+        NULL,
+        '개발자4',
+        NULL,
+        '19900104',
+        'USER',
+        'dev_di_slot_4',
+        'dev_ci_slot_4',
+        NOW(),
+        FALSE,
+        NULL
+    ),
+    (
+        'dev5',
+        '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!',
+        NULL,
+        '개발자5',
+        NULL,
+        '19900105',
+        'USER',
+        'dev_di_slot_5',
+        'dev_ci_slot_5',
+        NOW(),
+        FALSE,
+        NULL
+    ),
+    (
+        'dev6',
+        '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!',
+        NULL,
+        '개발자6',
+        NULL,
+        '19900106',
+        'USER',
+        'dev_di_slot_6',
+        'dev_ci_slot_6',
+        NOW(),
+        FALSE,
+        NULL
+    ),
+    (
+        'dev7',
+        '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!',
+        NULL,
+        '개발자7',
+        NULL,
+        '19900107',
+        'USER',
+        'dev_di_slot_7',
+        'dev_ci_slot_7',
+        NOW(),
+        FALSE,
+        NULL
+    ),
+    (
+        'dev8',
+        '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!',
+        NULL,
+        '개발자8',
+        NULL,
+        '19900108',
+        'USER',
+        'dev_di_slot_8',
+        'dev_ci_slot_8',
+        NOW(),
+        FALSE,
+        NULL
+    ),
+    (
+        'dev9',
+        '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!',
+        NULL,
+        '개발자9',
+        NULL,
+        '19900109',
+        'USER',
+        'dev_di_slot_9',
+        'dev_ci_slot_9',
+        NOW(),
+        FALSE,
+        NULL
+    ),
+    (
+        'dev10',
+        '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!',
+        NULL,
+        '개발자10',
+        NULL,
+        '19900110',
+        'USER',
+        'dev_di_slot_10',
+        'dev_ci_slot_10',
+        NOW(),
+        FALSE,
+        NULL
+    )
+    ON DUPLICATE KEY UPDATE
+                         name = VALUES(name),
+                         is_deleted = FALSE;
 
 INSERT INTO cards
 (card_id, card_name, card_type, card_variant_id, annual_fee, card_image_url,
