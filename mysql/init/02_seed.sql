@@ -138,21 +138,45 @@ VALUES
    (9, 'HOMEPLUS', '홈플러스', 'https://cdn.benepay.com/brands/homeplus.png');
 
 
+-- =========================================================
 -- 일반 사용자
--- ci_hash는 목서버 mock_customers.ci_hash와 동일하게 설정
+--
+-- 목 카드사 고객 10명 중 BenePay 회원가입을 완료한 사용자 3명
+-- ci_hash는 목서버 mock_customers.ci_hash와 동일하게 설정한다.
+--
+-- 개발자 로그인용 계정이 user_id 3~11을 사용하므로
+-- 세 번째 일반 사용자는 user_id 12를 사용한다.
+-- =========================================================
+
+INSERT INTO users
+(
+    user_id,
+    login_id,
+    login_password_hash,
+    pin_hash,
+    name,
+    phone_number,
+    birth_date,
+    role,
+    di,
+    ci_hash,
+    ci_encrypted,
+    created_at,
+    is_deleted,
+    fcm_token
+)
+VALUES
+    (1, 'kimtaehee', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김태희', '01011111111', '19990101', 'USER', 'di_kimtaehee_0001', 'e87e3049b21ed704e0c72749e395856b4e1cc957274b177ae74d0a3d6d328a53', 'ci_encrypted_kimtaehee_0001', '2026-07-01 10:00:00', FALSE, NULL),
+    (2, 'kimseyoung', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김세영', '01022222222', '19990202', 'USER', 'di_kimseyoung_0002', '828d5bb1b3e8dfb99cc21dfe7418fbb0dd3cde5b125f0a29b35fd41ecc66dcba', 'ci_encrypted_kimseyoung_0002', '2026-07-02 10:00:00', FALSE, NULL),
+    (12, 'kimsumin', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김수민', '01033333333', '19990303', 'USER', 'di_kimsumin_0012', '8e8f8c8eac06e0ced85bfbf99e7446db62adc10d72a708f8ae9c43a5c04f88fd', 'ci_encrypted_kimsumin_0012', '2026-07-03 10:00:00', FALSE, NULL);
+
+-- 개발자 로그인 및 기능 테스트용 계정
+-- 목 카드사 자동 연동 대상과는 별도로 관리한다.
 
 INSERT INTO users (user_id, login_id, login_password_hash, pin_hash, name, phone_number, birth_date, role, di, ci_hash, ci_encrypted, created_at, is_deleted, fcm_token)
 VALUES
-    (1, 'kimdev', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김개발', '01011111111', '19900101', 'USER', 'di_kimdev_0001', '1111111111111111111111111111111111111111111111111111111111111111', 'ci_encrypted_kimdev_0001', NOW(), FALSE, NULL),
-    (2, 'leetest', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '이테스트', '01022222222', '19920202', 'USER', 'di_leetest_0002', '2222222222222222222222222222222222222222222222222222222222222222', 'ci_encrypted_leetest_0002', NOW(), FALSE, NULL);
-
--- 개발자 로그인용 계정
--- dev1, dev2는 목서버의 박베네, 최페이 고객과 ci_hash를 동일하게 설정
-
-INSERT INTO users (user_id, login_id, login_password_hash, pin_hash, name, phone_number, birth_date, role, di, ci_hash, ci_encrypted, created_at, is_deleted, fcm_token)
-VALUES
-    (3, 'dev1', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '박베네', NULL, '19900303', 'USER', 'dev_di_slot_1', '3333333333333333333333333333333333333333333333333333333333333333', 'dev_ci_slot_1', NOW(), FALSE, NULL),
-    (4, 'dev2', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '최페이', NULL, '19900404', 'USER', 'dev_di_slot_2', '4444444444444444444444444444444444444444444444444444444444444444', 'dev_ci_slot_2', NOW(), FALSE, NULL),
+    (3, 'dev1', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '개발자1', NULL, '19900303', 'USER', 'dev_di_slot_1', '3333333333333333333333333333333333333333333333333333333333333333', 'dev_ci_slot_1', NOW(), FALSE, NULL),
+    (4, 'dev2', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '개발자2', NULL, '19900404', 'USER', 'dev_di_slot_2', '4444444444444444444444444444444444444444444444444444444444444444', 'dev_ci_slot_2', NOW(), FALSE, NULL),
     (5, 'dev3', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '개발자3', NULL, '19900505', 'USER', 'dev_di_slot_3', '5555555555555555555555555555555555555555555555555555555555555555', 'dev_ci_slot_3', NOW(), FALSE, NULL),
     (6, 'dev4', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '개발자4', NULL, '19900606', 'USER', 'dev_di_slot_4', '6666666666666666666666666666666666666666666666666666666666666666', 'dev_ci_slot_4', NOW(), FALSE, NULL),
     (7, 'dev5', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '개발자5', NULL, '19900707', 'USER', 'dev_di_slot_5', '7777777777777777777777777777777777777777777777777777777777777777', 'dev_ci_slot_5', NOW(), FALSE, NULL),
@@ -218,22 +242,62 @@ VALUES
     (53, 'KB-PRODUCT-019-UPI', '가온 올포인트 체크카드', 'CHECK', '06', 0, 'https://cdn.benepay.com/cards/card-19.png', '전 가맹점 0.2% 기본 적립 및 커피·통신·편의점·교통·마트·주유 추가 적립', 1, 0, CAST('{"performanceTiers":[{"benefitNodeId":"GAON_ALL_POINT_TIER_0","tierName":"기본","minimumSpending":0,"maximumSpending":99999,"maximumCombinedMonthlyBenefit":null,"monthlyLimitType":"UNLIMITED","benefits":[{"serviceName":"전 가맹점 기본 적립","benefitType":"ALL_MERCHANTS","merchantScope":"DOMESTIC_AND_OVERSEAS","categoryCodes":[],"categoryName":"전 가맹점","discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.2,"monthlyLimit":null,"minimumSpendingRequired":false,"description":"국내·해외 전 가맹점 이용금액 0.2% 포인트리 기본 적립"}]},{"benefitNodeId":"GAON_ALL_POINT_TIER_1","tierName":"10만원 구간","minimumSpending":100000,"maximumSpending":299999,"maximumCombinedMonthlyBenefit":null,"monthlyLimitType":"UNLIMITED","benefits":[{"serviceName":"전 가맹점 기본 적립","benefitType":"ALL_MERCHANTS","merchantScope":"DOMESTIC_AND_OVERSEAS","categoryCodes":[],"categoryName":"전 가맹점","discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.2,"monthlyLimit":null,"minimumSpendingRequired":false,"description":"국내·해외 전 가맹점 이용금액 0.2% 포인트리 기본 적립"},{"serviceName":"커피·제과·아이스크림 추가 적립","benefitType":"MULTI_CATEGORY","categoryCodes":["5813","5462"],"categoryName":"카페·제과·아이스크림","discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.2,"monthlyLimit":null,"description":"커피·제과·아이스크림 업종 이용금액 0.2% 추가 적립"},{"serviceName":"이동통신 자동이체 추가 적립","benefitType":"AUTOMATIC_PAYMENT","categoryCodes":[],"categoryName":"이동통신","merchantNames":["SKT","KT","LG U+"],"discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.2,"monthlyLimit":null,"description":"SKT·KT·LG U+ 이동통신요금 자동이체 금액 0.2% 추가 적립","exclusions":["유·무선 결합 통신요금"]},{"serviceName":"GS25 추가 적립","benefitType":"MERCHANT_BRAND","categoryCodes":["5499"],"categoryName":"편의점","merchantNames":["GS25"],"discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.2,"monthlyLimit":null,"description":"GS25 이용금액 0.2% 추가 적립"},{"serviceName":"대중교통·택시 추가 적립","benefitType":"MULTI_TARGET","categoryCodes":[],"categoryName":"대중교통·택시","supportedTargets":["버스","지하철","택시"],"discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.2,"monthlyLimit":null,"description":"버스·지하철·택시 이용금액 0.2% 추가 적립","conditions":["대중교통은 RF교통기관 업종 기준"],"exclusions":["시외버스","고속버스","공항버스"]}]},{"benefitNodeId":"GAON_ALL_POINT_TIER_2","tierName":"30만원 구간","minimumSpending":300000,"maximumSpending":null,"maximumCombinedMonthlyBenefit":null,"monthlyLimitType":"MIXED_LIMIT","benefits":[{"serviceName":"전 가맹점 기본 적립","benefitType":"ALL_MERCHANTS","merchantScope":"DOMESTIC_AND_OVERSEAS","categoryCodes":[],"categoryName":"전 가맹점","discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.2,"monthlyLimit":null,"minimumSpendingRequired":false,"description":"국내·해외 전 가맹점 이용금액 0.2% 포인트리 기본 적립"},{"serviceName":"커피·제과·아이스크림 추가 적립","benefitType":"MULTI_CATEGORY","categoryCodes":["5813","5462"],"categoryName":"카페·제과·아이스크림","discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.2,"monthlyLimit":null,"description":"커피·제과·아이스크림 업종 이용금액 0.2% 추가 적립"},{"serviceName":"이동통신 자동이체 추가 적립","benefitType":"AUTOMATIC_PAYMENT","categoryCodes":[],"categoryName":"이동통신","merchantNames":["SKT","KT","LG U+"],"discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.2,"monthlyLimit":null,"description":"SKT·KT·LG U+ 이동통신요금 자동이체 금액 0.2% 추가 적립","exclusions":["유·무선 결합 통신요금"]},{"serviceName":"GS25 추가 적립","benefitType":"MERCHANT_BRAND","categoryCodes":["5499"],"categoryName":"편의점","merchantNames":["GS25"],"discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.2,"monthlyLimit":null,"description":"GS25 이용금액 0.2% 추가 적립"},{"serviceName":"대중교통·택시 추가 적립","benefitType":"MULTI_TARGET","categoryCodes":[],"categoryName":"대중교통·택시","supportedTargets":["버스","지하철","택시"],"discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.2,"monthlyLimit":null,"description":"버스·지하철·택시 이용금액 0.2% 추가 적립","conditions":["대중교통은 RF교통기관 업종 기준"],"exclusions":["시외버스","고속버스","공항버스"]},{"serviceName":"대형마트 추가 적립","benefitType":"MERCHANT_BRAND","categoryCodes":["5411"],"categoryName":"대형마트","merchantNames":["이마트","롯데마트","홈플러스"],"discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.8,"minimumPaymentAmount":30000,"maximumPaymentAmountPerMonth":500000,"maximumRewardAmountPerMonth":4000,"description":"대형마트 건당 3만원 이상 이용 시 0.8% 추가 적립, 월 이용금액 50만원까지","exclusions":["온라인 쇼핑몰","상품권 구매","건물 내 임대매장","SSM"]},{"serviceName":"GS칼텍스 추가 적립","benefitType":"MERCHANT_BRAND","categoryCodes":["5541"],"categoryName":"주유소","merchantNames":["GS칼텍스"],"discountMethod":"POINT_ACCUMULATION","pointType":"POINTREE","rewardRate":0.8,"minimumPaymentAmount":30000,"maximumPaymentAmountPerMonth":300000,"maximumRewardAmountPerMonth":2400,"description":"GS칼텍스 건당 3만원 이상 이용 시 0.8% 추가 적립, 월 이용금액 30만원까지","exclusions":["LPG"]}]}],"gracePeriod":{"available":false,"description":"추가 적립 서비스는 실적 충족 시에만 제공되며 실적 유예기간 없음"},"commonConditions":{"previousMonthSpendingPeriod":"전월 1일부터 말일까지","spendingStandard":"가온 올포인트 체크카드 승인금액의 이용일 기준","benefitStandard":"KB국민카드 가맹점 업종 분류 기준","basicRewardMinimumSpendingRequired":false},"rewardExclusions":["대학 및 대학원 등록금","각종 수수료 및 이자","상품권 및 선불카드 구입·충전금액","지방세","상하수도요금","세외수입","아파트관리비","정부지원금","연체료","취소금액","건당 1천원 미만 이용금액","포인트리 충전금액"],"performanceExclusions":["교통 이용금액","무승인금액","해외 이용금액","정부지원금","포인트 충전금액","대학 및 대학원 등록금","상품권 및 선불카드 구입·충전금액","연체료","지방세","상하수도요금","세외수입","취소금액","각종 수수료 및 이자"]}' AS JSON)),
 
 
+-- =========================================================
 -- 사용자 보유 카드
--- 목서버의 card_reference_id, token_reference_id와 동일한 값 사용
+--
+-- 목 카드사 자동 연동이 완료된 상태를 나타낸다.
+-- 카드 참조값, 토큰, 만료일 및 PAN 마지막 4자리는
+-- mock_customer_cards 데이터와 동일하게 설정한다.
+-- =========================================================
 
-INSERT INTO user_cards (user_card_id, user_id, card_id, issuer_card_reference_id, issuer_token_reference_id, payment_token, card_expiry_year_month, token_expiry_date, pan_last4, status, is_primary, recommendation_enabled, created_at, updated_at, deleted_at)
+INSERT INTO user_cards
+(
+    user_card_id,
+    user_id,
+    card_id,
+    issuer_card_reference_id,
+    issuer_token_reference_id,
+    payment_token,
+    card_expiry_year_month,
+    token_expiry_date,
+    pan_last4,
+    status,
+    is_primary,
+    recommendation_enabled,
+    created_at,
+    updated_at,
+    deleted_at
+)
 VALUES
-    (1, 1, 2, 'KB-CARD-0001', 'KB-TOKEN-0001', '9475000000001234', '203012', '2030-12-31', '1234', 'ACTIVE', 1, 1, '2026-03-01 10:00:00', NULL, NULL),
-    (2, 1, 12, 'KB-CARD-0002', 'KB-TOKEN-0002', '9475000000005678', '202911', '2029-11-30', '5678', 'ACTIVE', 0, 1, '2026-03-05 11:20:00', NULL, NULL),
-    (3, 2, 4, 'KB-CARD-0003', 'KB-TOKEN-0003', '9475000000002222', '203108', '2031-08-31', '2222', 'ACTIVE', 1, 0, '2026-01-20 08:45:00', '2026-06-01 09:00:00', NULL),
-    (4, 2, 2, 'KB-CARD-0004', 'KB-TOKEN-0004', '9475000000003333', '202812', '2028-12-31', '3333', 'SUSPENDED', 0, 0, '2024-08-11 09:00:00', NULL, NULL);
+    -- 김태희
+    (1, 1, 2, 'KB-CARD-0001', 'KB-TOKEN-0001', '9475000000001842', '202812', '2028-12-31', '1842', 'ACTIVE', 1, 1, '2026-07-01 10:05:00', NULL, NULL),
+    (2, 1, 12, 'KB-CARD-0002', 'KB-TOKEN-0002', '9475000000005371', '202909', '2029-09-30', '5371', 'ACTIVE', 0, 1, '2026-07-01 10:05:00', NULL, NULL),
+
+    -- 김세영
+    (3, 2, 1, 'KB-CARD-0003', 'KB-TOKEN-0003', '9475000000002915', '202811', '2028-11-30', '2915', 'ACTIVE', 1, 1, '2026-07-02 10:05:00', NULL, NULL),
+    (4, 2, 15, 'KB-CARD-0004', 'KB-TOKEN-0004', '9475000000006408', '202906', '2029-06-30', '6408', 'ACTIVE', 0, 1, '2026-07-02 10:05:00', NULL, NULL),
+
+    -- 김수민
+    (5, 12, 10, 'KB-CARD-0005', 'KB-TOKEN-0005', '9475000000003157', '202810', '2028-10-31', '3157', 'ACTIVE', 1, 1, '2026-07-03 10:05:00', NULL, NULL),
+    (6, 12, 17, 'KB-CARD-0006', 'KB-TOKEN-0006', '9475000000007489', '202907', '2029-07-31', '7489', 'ACTIVE', 0, 1, '2026-07-03 10:05:00', NULL, NULL);
+
 
 INSERT INTO card_monthly_status
-(card_monthly_status_id, user_card_id, target_year_month, total_spending_amount, updated_at)
+(
+    card_monthly_status_id,
+    user_card_id,
+    target_year_month,
+    total_spending_amount,
+    updated_at
+)
 VALUES
-    (1, 1, '202607', 105400, '2026-07-10 15:05:00'),
-    (2, 2, '202607', 11400, '2026-07-02 19:30:00'),
-    (3, 3, '202607', 0, '2026-07-01 00:00:00');
+    (1, 1, '202607', 250000, '2026-07-31 23:59:00'),
+    (2, 2, '202607', 380000, '2026-07-31 23:59:00'),
+    (3, 3, '202607', 85000,  '2026-07-31 23:59:00'),
+    (4, 4, '202607', 420000, '2026-07-31 23:59:00'),
+    (5, 5, '202607', 310000, '2026-07-31 23:59:00'),
+    (6, 6, '202607', 175000, '2026-07-31 23:59:00');
+
 
 INSERT INTO merchants
 (merchant_id, brand_id, category_code, merchant_code, merchant_name, address, latitude, longitude, phone)
@@ -254,21 +318,22 @@ VALUES
     (1, 1, 1, '2026-07-20 10:00:00', 0),
     (2, 1, 3, '2026-07-21 11:00:00', 0),
     (3, 2, 2, '2026-07-22 12:00:00', 0),
-    (4, 3, 5, '2026-07-23 13:00:00', 0);
+    (4, 3, 5, '2026-07-23 13:00:00', 0),
+    (5, 12, 5, '2026-07-24 14:00:00', 0);
 
 -- 결제 내역
 
 INSERT INTO payments (payment_id, merchant_id, user_card_id, payment_time, original_amount, discount_amount, final_amount, payment_status, payment_method)
 VALUES
     (1, 1, 1, '2026-08-01 09:20:00', 6500, 650, 5850, 'APPROVED', 'BARCODE'),
-    (2, 2, 1, '2026-08-02 13:10:00', 12000, 600, 11400, 'APPROVED', 'QR'),
-    (3, 3, 2, '2026-08-03 18:30:00', 30000, 3000, 27000, 'APPROVED', 'BARCODE'),
-    (4, 5, 3, '2026-08-04 12:40:00', 45000, 2250, 42750, 'APPROVED', 'QR'),
-    (5, 6, 3, '2026-08-04 19:00:00', 18000, 0, 18000, 'CANCELED', 'QR');
-
+    (2, 2, 2, '2026-08-02 13:10:00', 12000, 600, 11400, 'APPROVED', 'QR'),
+    (3, 3, 3, '2026-08-03 18:30:00', 30000, 3000, 27000, 'APPROVED', 'BARCODE'),
+    (4, 5, 4, '2026-08-04 12:40:00', 45000, 2250, 42750, 'APPROVED', 'QR'),
+    (5, 6, 5, '2026-08-04 19:00:00', 18000, 0, 18000, 'CANCELED', 'QR'),
+    (6, 1, 6, '2026-08-05 08:30:00', 15000, 0, 15000, 'APPROVED', 'BARCODE');
 
 -- 카드 발급 웹훅 이벤트
--- KB-CARD-0005는 수신 후 아직 user_cards 등록 전 상태
+-- 카드 발급 이벤트 데이터는 신규 카드 발급 웹훅 테스트 시 별도 추가
 
 INSERT INTO card_issuance_events (id, event_id, ci_hash, card_reference_id, issuer_product_code, card_last4, card_type, card_status, processing_status, fail_reason, received_at, processed_at)
 VALUES
