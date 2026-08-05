@@ -281,7 +281,7 @@ CREATE TABLE merchants (
 -- 저장 매장
 -- =========================================================
 
-CREATE TABLE bookmarked_stores (
+CREATE TABLE bookmarked_merchants (
                                    bookmark_id BIGINT NOT NULL AUTO_INCREMENT,
                                    user_id BIGINT NOT NULL,
                                    merchant_id BIGINT NOT NULL,
@@ -289,17 +289,17 @@ CREATE TABLE bookmarked_stores (
                                    is_deleted TINYINT(1) NOT NULL DEFAULT 0,
 
                                    PRIMARY KEY (bookmark_id),
-                                   UNIQUE KEY UQ_bookmarked_stores_user_merchant (
+                                   UNIQUE KEY UQ_bookmarked_merchants_user_merchant (
                                        user_id,
                                        merchant_id
                                        ),
-                                   KEY IDX_bookmarked_stores_merchant_id (merchant_id),
+                                   KEY IDX_bookmarked_merchants_merchant_id (merchant_id),
 
-                                   CONSTRAINT FK_users_TO_bookmarked_stores
+                                   CONSTRAINT FK_users_TO_bookmarked_merchants
                                        FOREIGN KEY (user_id)
                                            REFERENCES users (user_id),
 
-                                   CONSTRAINT FK_merchants_TO_bookmarked_stores
+                                   CONSTRAINT FK_merchants_TO_bookmarked_merchants
                                        FOREIGN KEY (merchant_id)
                                            REFERENCES merchants (merchant_id)
 ) ENGINE = InnoDB
