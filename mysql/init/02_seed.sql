@@ -20922,7 +20922,7 @@ VALUES
     (20408, NULL, '5812', 'MC-0020408', '백운가마솥', '충청북도 제천시 백운면 평동로4길 27', 37.1387384, 128.0220259, NULL);
 
 
-INSERT INTO bookmarked_stores
+INSERT INTO bookmarked_merchants
 (bookmark_id, user_id, merchant_id, created_at, is_deleted)
 VALUES
     (1, 1, 1, '2026-07-01 08:00:00', 0),
