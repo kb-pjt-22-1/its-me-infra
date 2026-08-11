@@ -8,6 +8,7 @@ TRUNCATE TABLE card_issuance_events;
 TRUNCATE TABLE encryption_keys;
 TRUNCATE TABLE payments;
 TRUNCATE TABLE bookmarked_merchants;
+TRUNCATE TABLE user_card_benefit_monthly_status;
 TRUNCATE TABLE merchants;
 TRUNCATE TABLE merchant_categories;
 TRUNCATE TABLE merchant_brands;
@@ -21178,6 +21179,39 @@ VALUES
     (184, 8, 32, '2026-08-15 12:06:00', 5000, 0, 5000, 'APPROVED', 'BARCODE'),
     (185, 3, 32, '2026-08-17 15:30:00', 11000, 100, 10900, 'APPROVED', 'BARCODE'),
     (186, 7, 33, '2026-08-16 21:00:00', 45000, 6300, 38700, 'APPROVED', 'QR');
+
+-- =========================================================
+-- 사용자 카드 카테고리별 월 혜택 사용 현황
+--
+-- 승인된 결제 중 실제 할인 금액이 발생한 건을
+-- 사용자 보유 카드 + 가맹점 카테고리 + 월 단위로 집계한다.
+-- =========================================================
+
+INSERT INTO user_card_benefit_monthly_status
+(
+    user_card_id,
+    category_code,
+    target_year_month,
+    used_benefit_amount,
+    usage_count,
+    updated_at
+)
+SELECT
+    p.user_card_id,
+    m.category_code,
+    DATE_FORMAT(p.payment_time, '%Y%m') AS target_year_month,
+    SUM(p.discount_amount) AS used_benefit_amount,
+    COUNT(*) AS usage_count,
+    MAX(p.payment_time) AS updated_at
+FROM payments p
+INNER JOIN merchants m
+    ON p.merchant_id = m.merchant_id
+WHERE p.payment_status = 'APPROVED'
+  AND p.discount_amount > 0
+GROUP BY
+    p.user_card_id,
+    m.category_code,
+    DATE_FORMAT(p.payment_time, '%Y%m');
 
 -- 카드 발급 웹훅 이벤트
 -- 카드 발급 이벤트 데이터는 신규 카드 발급 웹훅 테스트 시 별도 추가
