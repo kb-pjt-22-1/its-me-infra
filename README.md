@@ -71,9 +71,12 @@ backend/frontend 컨테이너는 건드리지 않습니다.
 
 - **nginx/redis**: `down` 후 `up`으로 완전히 재기동 — 바인드 마운트된 conf 파일 내용은
   compose가 변경 감지를 못 하므로, 재기동해야 새 설정이 실제로 적용됩니다.
-- **mysql**: 컨테이너는 내리지 않습니다. `docker-entrypoint-initdb.d`는 데이터 볼륨이 비어있을 때
-  **딱 한 번만** 실행되기 때문에, 재기동만으로는 스키마/시드 변경이 반영되지 않습니다.
-  대신 컨테이너를 띄운 채로 `01_schema.sql` → `02_seed.sql`을 직접 실행합니다.
+- **mysql**: `docker-compose.yml`의 mysql 설정(이미지 태그, 환경변수 등)이 바뀐 경우에만
+  nginx/redis와 동일하게 `down` 후 `up`으로 재기동합니다. `mysql-data`는 named volume이라
+  컨테이너를 내려도 지워지지 않으니 데이터는 유지됩니다. 그 외의 경우엔 컨테이너 기동만 보장합니다.
+  `docker-entrypoint-initdb.d`는 데이터 볼륨이 비어있을 때 **딱 한 번만** 실행되기 때문에,
+  재기동만으로는 스키마/시드 변경이 반영되지 않습니다 — 대신 컨테이너가 떠 있는 채로
+  `01_schema.sql` → `02_seed.sql`을 직접 실행합니다.
 
   ⚠️ `01_schema.sql`이 `DROP DATABASE IF EXISTS`로 시작하므로, **이 워크플로우가 돌 때마다
   `benepay` DB를 통째로 지우고 다시 만듭니다.** 목데이터 단계에서만 쓰는 방식이며, 실 사용자

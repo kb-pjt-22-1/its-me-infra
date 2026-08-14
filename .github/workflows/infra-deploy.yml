@@ -45,6 +45,8 @@ jobs:
           filters: |
             mysql:
               - 'mysql/init/**'
+            mysql_compose:
+              - 'docker-compose.yml'
             nginx:
               - 'nginx/**'
               - 'docker-compose.yml'
@@ -83,8 +85,19 @@ jobs:
               echo "redis 관련 변경 없음 -> 스킵"
             fi
 
-            # mysql: 컨테이너는 항상 띄워두기만 한다 (redis/nginx와 달리 down은 하지 않음).
-            docker compose --profile prod up -d --wait mysql
+            # mysql: docker-compose.yml의 mysql 설정(이미지 태그, 환경변수 등)이 바뀐 경우에만
+            # redis/nginx처럼 down -> up으로 완전히 재기동한다. mysql-data는 named volume이라
+            # down으로 컨테이너를 내려도 지워지지 않으므로 데이터는 그대로 유지된다
+            # (데이터 초기화는 아래 SQL 재적용 단계가 별도로 담당).
+            if [ "${{ steps.changes.outputs.mysql_compose }}" = "true" ]; then
+              echo "docker-compose.yml의 mysql 설정 변경 감지 -> 재배포"
+              docker compose --profile prod pull mysql
+              docker compose --profile prod down mysql
+              docker compose --profile prod up -d --wait mysql
+            else
+              echo "docker-compose.yml의 mysql 설정 변경 없음 -> 컨테이너 기동만 보장"
+              docker compose --profile prod up -d --wait mysql
+            fi
 
             # SQL 재적용(DROP DATABASE 포함)은 mysql/init/**이 이 push에서 실제로 바뀐 경우에만.
             # docker-entrypoint-initdb.d는 데이터 볼륨이 비어있을 때 딱 한 번만 실행되므로,
