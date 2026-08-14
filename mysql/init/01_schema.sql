@@ -647,6 +647,54 @@ CREATE TABLE card_issuance_events
   COLLATE = utf8mb4_0900_ai_ci;
 
 -- =========================================================
+-- 사용자 카드 카테고리별 월 혜택 사용 현황
+-- =========================================================
+
+CREATE TABLE user_card_benefit_monthly_status
+(
+    user_card_benefit_monthly_status_id BIGINT NOT NULL AUTO_INCREMENT
+        COMMENT '사용자 카드 혜택 월별 현황 ID',
+
+    user_card_id BIGINT NOT NULL
+        COMMENT '사용자 보유 카드 ID',
+
+    category_code CHAR(4) NOT NULL
+        COMMENT '혜택 카테고리 코드',
+
+    target_year_month CHAR(6) NOT NULL
+        COMMENT '대상 연월 YYYYMM',
+
+    used_benefit_amount DECIMAL(10, 0) NOT NULL DEFAULT 0
+        COMMENT '해당 월 카테고리 혜택 사용 금액',
+
+    usage_count INT NOT NULL DEFAULT 0
+        COMMENT '해당 월 카테고리 혜택 사용 횟수',
+
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+        COMMENT '혜택 사용 현황 최종 수정 일시',
+
+    PRIMARY KEY (user_card_benefit_monthly_status_id),
+
+    UNIQUE KEY UQ_user_card_benefit_monthly_status
+        (user_card_id, category_code, target_year_month),
+
+    KEY IDX_user_card_benefit_monthly_category
+        (category_code),
+
+    CONSTRAINT FK_user_cards_TO_user_card_benefit_monthly_status
+        FOREIGN KEY (user_card_id)
+            REFERENCES user_cards (user_card_id),
+
+    CONSTRAINT FK_merchant_categories_TO_user_card_benefit_monthly_status
+        FOREIGN KEY (category_code)
+            REFERENCES merchant_categories (category_code)
+
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
+
+-- =========================================================
 -- 암호화 키
 -- 개발·운영 환경별 키 데이터는 별도로 주입
 -- =========================================================
