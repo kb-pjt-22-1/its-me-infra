@@ -526,6 +526,9 @@ CREATE TABLE payments
     final_amount DECIMAL(10, 0) NOT NULL
         COMMENT '최종 결제 금액',
 
+    benefit_service_name VARCHAR(100) DEFAULT NULL
+        COMMENT '이 결제에 적용된 혜택의 serviceName. 감사/재계산용 - 집계 테이블이 깨지면 여기서 다시 만들 수 있다.',
+
     payment_status VARCHAR(20) NOT NULL DEFAULT 'PENDING'
         COMMENT '결제 상태: PENDING, APPROVED, CANCELED, PAYMENT_FAILED',
 
@@ -689,6 +692,58 @@ CREATE TABLE user_card_benefit_monthly_status
     CONSTRAINT FK_merchant_categories_TO_user_card_benefit_monthly_status
         FOREIGN KEY (category_code)
             REFERENCES merchant_categories (category_code)
+
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
+
+-- =========================================================
+-- 카드 추천(모드 1) 혜택 소진액
+--
+-- 한도소진/횟수소진 판정을 위한 혜택별 월/연 사용액 집계 테이블.
+-- 키는 performanceTiers[].benefitNodeId(구간 id)가 아니라 개별 혜택의
+-- serviceName이다 - benefits_info JSON에서 구간 하나에 여러 혜택이 들어있고,
+-- 한도/횟수 제한은 혜택 하나하나에 걸리기 때문이다.
+-- =========================================================
+
+CREATE TABLE card_benefit_monthly_usage
+(
+    card_benefit_monthly_usage_id BIGINT NOT NULL AUTO_INCREMENT
+        COMMENT '카드 혜택 월별 소진액 ID',
+
+    user_card_id BIGINT NOT NULL
+        COMMENT '사용자 보유 카드 ID',
+
+    benefit_service_name VARCHAR(100) NOT NULL
+        COMMENT 'benefits_info JSON의 benefit.serviceName',
+
+    target_year INT NOT NULL
+        COMMENT 'annualCountLimit 집계용 - target_year_month에서 매번 파싱하지 않도록 별도 컬럼으로 둠',
+
+    target_year_month CHAR(6) NOT NULL
+        COMMENT '대상 연월 YYYYMM',
+
+    used_amount DECIMAL(12, 0) NOT NULL DEFAULT 0
+        COMMENT '해당 월 혜택 사용 금액',
+
+    used_count INT NOT NULL DEFAULT 0
+        COMMENT '해당 월 혜택 사용 횟수',
+
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+        COMMENT '혜택 소진액 최종 수정 일시',
+
+    PRIMARY KEY (card_benefit_monthly_usage_id),
+
+    UNIQUE KEY UQ_card_benefit_monthly_usage
+        (user_card_id, benefit_service_name, target_year_month),
+
+    KEY IDX_card_benefit_monthly_usage_year
+        (user_card_id, target_year),
+
+    CONSTRAINT FK_user_cards_TO_card_benefit_monthly_usage
+        FOREIGN KEY (user_card_id)
+            REFERENCES user_cards (user_card_id)
 
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
