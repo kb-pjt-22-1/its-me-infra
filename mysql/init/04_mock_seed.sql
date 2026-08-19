@@ -42,70 +42,70 @@ INSERT INTO mock_customers
 VALUES
     (
         1,
-        'e87e3049b21ed704e0c72749e395856b4e1cc957274b177ae74d0a3d6d328a53',
+        '2b92044316c10e218dc902edb4cfe3992dbaaa1a549fbac6cdb2a4e530113dcb',
         'KB-CUSTOMER-0001',
         '김태희',
         'ACTIVE'
     ),
     (
         2,
-        '828d5bb1b3e8dfb99cc21dfe7418fbb0dd3cde5b125f0a29b35fd41ecc66dcba',
+        'd2cee81d9680e2ace464e43ecabb0fb9e4d452b0dce9440facf6a0227a752114',
         'KB-CUSTOMER-0002',
         '김세영',
         'ACTIVE'
     ),
     (
         3,
-        '8e8f8c8eac06e0ced85bfbf99e7446db62adc10d72a708f8ae9c43a5c04f88fd',
+        '13e3ee895e4686fa465628808ea21d584240fb07d4660882b845b3820d05eac5',
         'KB-CUSTOMER-0003',
         '김수민',
         'ACTIVE'
     ),
     (
         4,
-        'a0e776f34dab65b6d6e41d9c35d94c2ab9961a682f924a15707a5f93993de560',
+        '57855f557abbea833881334f3df9001eb432f2ccefe19409189d92480f150a2e',
         'KB-CUSTOMER-0004',
         '박종현',
         'ACTIVE'
     ),
     (
         5,
-        '9f9de2aad35e37c31d7d776bdda27a1c5704a492f0944c12864fe97e3e4eba5c',
+        '5da90e454910659d1921f91cd557a7411d78e4c7f1e930e57d3239207b7a3912',
         'KB-CUSTOMER-0005',
         '이상준',
         'ACTIVE'
     ),
     (
         6,
-        'bcc9990676984970ee23a6b7c3b48f49c5b51ccf0680c27d4adc28d3278e4c72',
+        'c67b096d5435a39461dad7250ab7a81b416e76f1aa96831b5e3491ddc1d51d65',
         'KB-CUSTOMER-0006',
         '심혜근',
         'ACTIVE'
     ),
     (
         7,
-        'e1168fd5617fb05ae9a42a7c775e1ae5d5f8b9bd211fc626bc4287861ed52a96',
+        '11164864b8f300ac8d18ad5ba8a69dae712a17809a8ea6525596189c7bfca717',
         'KB-CUSTOMER-0007',
         '배승호',
         'ACTIVE'
     ),
     (
         8,
-        'e3aa01c5f0f4e64d5323b98db996d204f20f84d8ff5079b4e321525ab66d9280',
+        'a036a0ae6974380cb6538e2f5372d44b92c49ac20ec074e34952f3afc10fbccc',
         'KB-CUSTOMER-0008',
         '정을용',
         'ACTIVE'
     ),
     (
         9,
-        '2f3391306bb5f0ee389435bbe0dd4d0b059a5b8e06b01e3ce879276f1f31f2af',
+        '4ffa3335230e5c09dec608e1871fcbfd12be718045c023e67bd5aa1d75144f5b',
         'KB-CUSTOMER-0009',
         '김혁준',
         'ACTIVE'
     ),
     (
         10,
-        '92bd2b518365fb0e5c4e9d9002cfddd66e59415aa54d0fe2b1a722b4a9cd4182',
+        '38f5aab647de1b456e92fd1cdff2f57a39a824bdb93596cbf8167dd77023ade0',
         'KB-CUSTOMER-0010',
         '김민지',
         'ACTIVE'
