@@ -279,9 +279,9 @@ INSERT INTO users
     fcm_token
 )
 VALUES
-    (1, 'kimtaehee', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김태희', '01011111111', '19990101', 'USER', 'di_kimtaehee_0001', 'e87e3049b21ed704e0c72749e395856b4e1cc957274b177ae74d0a3d6d328a53', 'ci_encrypted_kimtaehee_0001', '2026-07-01 10:00:00', FALSE, NULL),
-    (2, 'kimseyoung', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김세영', '01022222222', '19990202', 'USER', 'di_kimseyoung_0002', '828d5bb1b3e8dfb99cc21dfe7418fbb0dd3cde5b125f0a29b35fd41ecc66dcba', 'ci_encrypted_kimseyoung_0002', '2026-07-02 10:00:00', FALSE, NULL),
-    (12, 'kimsumin', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김수민', '01033333333', '19990303', 'USER', 'di_kimsumin_0012', '8e8f8c8eac06e0ced85bfbf99e7446db62adc10d72a708f8ae9c43a5c04f88fd', 'ci_encrypted_kimsumin_0012', '2026-07-03 10:00:00', FALSE, NULL);
+    (1, 'kimtaehee', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김태희', '01011111111', '19990101', 'USER', 'di_kimtaehee_0001', '2b92044316c10e218dc902edb4cfe3992dbaaa1a549fbac6cdb2a4e530113dcb', 'ci_encrypted_kimtaehee_0001', '2026-07-01 10:00:00', FALSE, NULL),
+    (2, 'kimseyoung', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김세영', '01022222222', '19990202', 'USER', 'di_kimseyoung_0002', 'd2cee81d9680e2ace464e43ecabb0fb9e4d452b0dce9440facf6a0227a752114', 'ci_encrypted_kimseyoung_0002', '2026-07-02 10:00:00', FALSE, NULL),
+    (12, 'kimsumin', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김수민', '01033333333', '19990303', 'USER', 'di_kimsumin_0012', '13e3ee895e4686fa465628808ea21d584240fb07d4660882b845b3820d05eac5', 'ci_encrypted_kimsumin_0012', '2026-07-03 10:00:00', FALSE, NULL);
 
 -- 개발자 로그인 및 기능 테스트용 계정
 -- 목 카드사 자동 연동 대상과는 별도로 관리한다.
