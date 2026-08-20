@@ -43235,10 +43235,6 @@ VALUES
     (1,'CI','ZHsppXZssP/iNxL0DhGMYRpfzs9ksDslBH+j1E8UeVU=','AES256',1,'2026-07-28 17:45:12');
 
 
-
-INSERT INTO users ( user_id, login_id, login_password_hash, pin_hash, name, phone_number, birth_date, role, di, ci_hash, ci_encrypted, created_at, is_deleted, fcm_token ) VALUES
-
-
 -- =========================================================
 -- AI 혜택 코치 테스트용 일반 계정
 -- 공통 비밀번호 : qwe1234!
