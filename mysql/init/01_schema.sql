@@ -442,9 +442,6 @@ CREATE TABLE merchants
     longitude DECIMAL(10, 7) NOT NULL
         COMMENT '경도',
 
-    phone VARCHAR(20) DEFAULT NULL
-        COMMENT '가맹점 전화번호',
-
     PRIMARY KEY (merchant_id),
 
     UNIQUE KEY UQ_merchants_merchant_code
