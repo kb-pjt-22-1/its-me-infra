@@ -42,21 +42,21 @@ INSERT INTO mock_customers
 VALUES
     (
         1,
-        '2b92044316c10e218dc902edb4cfe3992dbaaa1a549fbac6cdb2a4e530113dcb',
+        'c063ef653babd2cd73f0520f327516ae9edecf854a40ff70bde2ace0235ae1d0',
         'KB-CUSTOMER-0001',
         '김태희',
         'ACTIVE'
     ),
     (
         2,
-        'd2cee81d9680e2ace464e43ecabb0fb9e4d452b0dce9440facf6a0227a752114',
+        '6a9676b211db326715249ca66cf9c90a92a03b50f54fbc3e57560a1438ac72f4',
         'KB-CUSTOMER-0002',
         '김세영',
         'ACTIVE'
     ),
     (
         3,
-        '13e3ee895e4686fa465628808ea21d584240fb07d4660882b845b3820d05eac5',
+        'c4bace98ecff0a501034f8237a9399728eb5956f81325fc3c411e6e2fd33eafe',
         'KB-CUSTOMER-0003',
         '김수민',
         'ACTIVE'
