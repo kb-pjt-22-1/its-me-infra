@@ -17,9 +17,9 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 실제 서비스에서는 본인확인기관에서 발급한 CI(연계정보)를 이용해
 -- 동일한 사용자를 식별한다.
 --
--- 본 프로젝트에서는 실제 본인인증기관을 연동하지 않으므로,
--- 테스트 사용자의 이름을 UTF-8로 변환한 뒤 SHA-256으로 해시한 값을
--- ci_hash로 사용한다.
+-- 본 프로젝트에서는 실제 본인인증기관을 연동하지 않으므로, 이름+생년월일+전화번호를
+-- 이어붙인 문자열을 UTF-8로 변환한 뒤 SHA-256으로 해시한 값을 ci_hash로 사용한다
+-- (Sha256Util.hash, SignupIdentityServiceImpl.buildCiHash와 동일한 조합).
 --
 -- 이름만 이용한 해시는 동명이인을 구분할 수 없으므로,
 -- 테스트 데이터의 사용자 이름은 중복되지 않는 것을 전제로 한다.
@@ -27,8 +27,8 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 카드 자동 연동을 위해 목 카드사의 ci_hash와
 -- BenePay users.ci_hash는 반드시 동일해야 한다.
 --
--- 예시:
--- SHA-256(UTF-8("김태희"))
+-- 예시 (users.02_seed.sql 김태희: 생년월일 19990101, 전화번호 01011111111):
+-- SHA-256(UTF-8("김태희" + "19990101" + "01011111111"))
 -- =========================================================
 
 INSERT INTO mock_customers
@@ -42,21 +42,21 @@ INSERT INTO mock_customers
 VALUES
     (
         1,
-        '2b92044316c10e218dc902edb4cfe3992dbaaa1a549fbac6cdb2a4e530113dcb',
+        'c063ef653babd2cd73f0520f327516ae9edecf854a40ff70bde2ace0235ae1d0',
         'KB-CUSTOMER-0001',
         '김태희',
         'ACTIVE'
     ),
     (
         2,
-        'd2cee81d9680e2ace464e43ecabb0fb9e4d452b0dce9440facf6a0227a752114',
+        '6a9676b211db326715249ca66cf9c90a92a03b50f54fbc3e57560a1438ac72f4',
         'KB-CUSTOMER-0002',
         '김세영',
         'ACTIVE'
     ),
     (
         3,
-        '13e3ee895e4686fa465628808ea21d584240fb07d4660882b845b3820d05eac5',
+        'c4bace98ecff0a501034f8237a9399728eb5956f81325fc3c411e6e2fd33eafe',
         'KB-CUSTOMER-0003',
         '김수민',
         'ACTIVE'
