@@ -1,9 +1,10 @@
 name: Deploy to EC2
 
 # 트리거 방법 두 가지:
-# 1) its-me-backend / its-me-frontend 의 배포 워크플로우가 이미지를 GHCR에 push한 뒤
-#    repository_dispatch(type: deploy)로 이 워크플로우를 호출.
-#    client_payload.service 에 자기 서비스명(backend | frontend)을 넘기면 그 컨테이너만 재배포된다.
+# 1) its-me-backend / its-me-frontend / its-me-card-mock 의 배포 워크플로우가 이미지를
+#    GHCR에 push한 뒤 repository_dispatch(type: deploy)로 이 워크플로우를 호출.
+#    client_payload.service 에 자기 서비스명(backend | frontend | card-mock)을 넘기면
+#    그 컨테이너만 재배포된다.
 # 2) 수동 배포가 필요할 때 Actions 탭에서 workflow_dispatch로 직접 실행
 #    (service를 비우면 prod 스택 전체를 pull/재기동)
 on:
@@ -12,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       service:
-        description: "재배포할 서비스 (backend | frontend). 비우면 전체 스택"
+        description: "재배포할 서비스 (backend | frontend | card-mock). 비우면 전체 스택"
         required: false
         default: ""
       image_tag:
@@ -21,6 +22,10 @@ on:
         default: latest
       frontend_image_tag:
         description: "its-me-frontend 이미지 태그"
+        required: false
+        default: latest
+      card_mock_image_tag:
+        description: "its-me-card-mock 이미지 태그"
         required: false
         default: latest
 
@@ -38,6 +43,7 @@ jobs:
       SERVICE: ${{ github.event.client_payload.service || inputs.service }}
       IMAGE_TAG: ${{ github.event.client_payload.image_tag || inputs.image_tag || 'latest' }}
       FRONTEND_IMAGE_TAG: ${{ github.event.client_payload.frontend_image_tag || inputs.frontend_image_tag || 'latest' }}
+      CARD_MOCK_IMAGE_TAG: ${{ github.event.client_payload.card_mock_image_tag || inputs.card_mock_image_tag || 'latest' }}
       # docker-compose.yml이 ${VAR} 치환으로 참조하는 값들. EC2에는 .env 파일을 두지 않고
       # 이 SSH 세션의 환경변수로만 주입한다 (아래 envs: 목록 참고).
       MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
@@ -58,8 +64,8 @@ jobs:
       - name: Validate service input
         run: |
           case "$SERVICE" in
-            ""|backend|frontend) ;;
-            *) echo "::error::service는 backend 또는 frontend여야 합니다 (받은 값: $SERVICE)"; exit 1 ;;
+            ""|backend|frontend|card-mock) ;;
+            *) echo "::error::service는 backend, frontend, card-mock 중 하나여야 합니다 (받은 값: $SERVICE)"; exit 1 ;;
           esac
 
       - name: Copy deploy files to EC2
@@ -79,7 +85,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT || 22 }}
-          envs: IMAGE_TAG,FRONTEND_IMAGE_TAG,SERVICE,MYSQL_DATABASE,MYSQL_USER,MYSQL_PASSWORD,MYSQL_ROOT_PASSWORD,MYSQL_PORT,REDIS_PORT,CERTBOT_EMAIL,JWT_SECRET,PORTONE_IMP_KEY,PORTONE_IMP_SECRET,DI_HASH_SALT
+          envs: IMAGE_TAG,FRONTEND_IMAGE_TAG,CARD_MOCK_IMAGE_TAG,SERVICE,MYSQL_DATABASE,MYSQL_USER,MYSQL_PASSWORD,MYSQL_ROOT_PASSWORD,MYSQL_PORT,REDIS_PORT,CERTBOT_EMAIL,JWT_SECRET,PORTONE_IMP_KEY,PORTONE_IMP_SECRET,DI_HASH_SALT
           script: |
             set -e
             cd ${{ secrets.EC2_APP_DIR }}

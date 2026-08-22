@@ -17,9 +17,9 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 실제 서비스에서는 본인확인기관에서 발급한 CI(연계정보)를 이용해
 -- 동일한 사용자를 식별한다.
 --
--- 본 프로젝트에서는 실제 본인인증기관을 연동하지 않으므로,
--- 테스트 사용자의 이름을 UTF-8로 변환한 뒤 SHA-256으로 해시한 값을
--- ci_hash로 사용한다.
+-- 본 프로젝트에서는 실제 본인인증기관을 연동하지 않으므로, 이름+생년월일+전화번호를
+-- 이어붙인 문자열을 UTF-8로 변환한 뒤 SHA-256으로 해시한 값을 ci_hash로 사용한다
+-- (Sha256Util.hash, SignupIdentityServiceImpl.buildCiHash와 동일한 조합).
 --
 -- 이름만 이용한 해시는 동명이인을 구분할 수 없으므로,
 -- 테스트 데이터의 사용자 이름은 중복되지 않는 것을 전제로 한다.
@@ -27,8 +27,8 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 카드 자동 연동을 위해 목 카드사의 ci_hash와
 -- BenePay users.ci_hash는 반드시 동일해야 한다.
 --
--- 예시:
--- SHA-256(UTF-8("김태희"))
+-- 예시 (users.02_seed.sql 김태희: 생년월일 19990101, 전화번호 01011111111):
+-- SHA-256(UTF-8("김태희" + "19990101" + "01011111111"))
 -- =========================================================
 
 INSERT INTO mock_customers
@@ -42,70 +42,70 @@ INSERT INTO mock_customers
 VALUES
     (
         1,
-        'e87e3049b21ed704e0c72749e395856b4e1cc957274b177ae74d0a3d6d328a53',
+        'c063ef653babd2cd73f0520f327516ae9edecf854a40ff70bde2ace0235ae1d0',
         'KB-CUSTOMER-0001',
         '김태희',
         'ACTIVE'
     ),
     (
         2,
-        '828d5bb1b3e8dfb99cc21dfe7418fbb0dd3cde5b125f0a29b35fd41ecc66dcba',
+        '6a9676b211db326715249ca66cf9c90a92a03b50f54fbc3e57560a1438ac72f4',
         'KB-CUSTOMER-0002',
         '김세영',
         'ACTIVE'
     ),
     (
         3,
-        '8e8f8c8eac06e0ced85bfbf99e7446db62adc10d72a708f8ae9c43a5c04f88fd',
+        'c4bace98ecff0a501034f8237a9399728eb5956f81325fc3c411e6e2fd33eafe',
         'KB-CUSTOMER-0003',
         '김수민',
         'ACTIVE'
     ),
     (
         4,
-        'a0e776f34dab65b6d6e41d9c35d94c2ab9961a682f924a15707a5f93993de560',
+        '6503125a553ba5f4845d59a032f633c28ed6db169a36ae0131c47bd223d32d37',
         'KB-CUSTOMER-0004',
         '박종현',
         'ACTIVE'
     ),
     (
         5,
-        '9f9de2aad35e37c31d7d776bdda27a1c5704a492f0944c12864fe97e3e4eba5c',
+        '9eef87e91a685dfd1e522a1cc6c67a9518d4f70dcfd9db7b3ee47c197853eb91',
         'KB-CUSTOMER-0005',
         '이상준',
         'ACTIVE'
     ),
     (
         6,
-        'bcc9990676984970ee23a6b7c3b48f49c5b51ccf0680c27d4adc28d3278e4c72',
+        'd50448fffce54dd3891757e63f94b6594946597233ce4e84926101834af6f565',
         'KB-CUSTOMER-0006',
         '심혜근',
         'ACTIVE'
     ),
     (
         7,
-        'e1168fd5617fb05ae9a42a7c775e1ae5d5f8b9bd211fc626bc4287861ed52a96',
+        '9824cde6e40495cd14b786cb22a5722be8b8b9bc9759e7af26cc1573e21942af',
         'KB-CUSTOMER-0007',
         '배승호',
         'ACTIVE'
     ),
     (
         8,
-        'e3aa01c5f0f4e64d5323b98db996d204f20f84d8ff5079b4e321525ab66d9280',
+        'bdffb4cc635b71d041f7356e858a7d6de006e616352d84fd2527ab96e6c99b3f',
         'KB-CUSTOMER-0008',
         '정을용',
         'ACTIVE'
     ),
     (
         9,
-        '2f3391306bb5f0ee389435bbe0dd4d0b059a5b8e06b01e3ce879276f1f31f2af',
+        '00c792b9272da8331a8b07fd172e9f9172517a4d421dd2eee1edbdd24204fa2f',
         'KB-CUSTOMER-0009',
         '김혁준',
         'ACTIVE'
     ),
     (
         10,
-        '92bd2b518365fb0e5c4e9d9002cfddd66e59415aa54d0fe2b1a722b4a9cd4182',
+        '9762937d3570af3e682429fb8dd72510f822398ee91fd2ef4f68461c8c60a25a',
         'KB-CUSTOMER-0010',
         '김민지',
         'ACTIVE'
