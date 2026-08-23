@@ -1,12 +1,15 @@
 name: Deploy Infra Services (nginx/mysql/redis)
 
 # 이 레포(nginx 설정, mysql/init, docker-compose.yml)가 main에 push되면
-# infra가 담당하는 서비스만 자동으로 재배포한다. backend/frontend 컨테이너는 건드리지 않는다
-# (그건 각 앱 레포의 main push -> repository_dispatch가 담당, deploy.yml 참고).
+# infra가 담당하는 서비스만 자동으로 재배포한다. backend/frontend/card-mock 컨테이너는
+# 건드리지 않는다(그건 각 앱 레포의 main push -> repository_dispatch가 담당, deploy.yml 참고).
 #
-# 주의: mysql/init/01_schema.sql이 DROP DATABASE IF EXISTS로 시작하기 때문에,
-# 이 워크플로우가 실행될 때마다 benepay DB를 통째로 지우고 스키마+목데이터를 다시 만든다.
-# 목데이터 단계에서만 쓰는 방식이며, 실 사용자 데이터가 쌓이면 증분 마이그레이션으로 바꿔야 한다.
+# 주의: 01_schema.sql/03_mock_schema.sql이 각각 DROP DATABASE IF EXISTS로 시작하기 때문에,
+# benepay와 kb_card_mock DB는 각자 관련 파일이 바뀔 때마다 통째로 지우고 스키마+목데이터를
+# 다시 만든다. 목데이터 단계에서만 쓰는 방식이며, 실 사용자 데이터가 쌓이면 증분 마이그레이션으로
+# 바꿔야 한다. 두 DB는 서로 다른 파일(01/02 vs 03/04)에 매여 있어서, 한쪽만 바뀌어도 아래
+# paths-filter가 그 DB만 골라서 재적용한다 - benepay 변경이 kb_card_mock을, 혹은 그 반대를
+# 잘못 건드리는 일은 없다.
 on:
   push:
     branches: [main]
@@ -43,8 +46,12 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            mysql:
-              - 'mysql/init/**'
+            benepay_sql:
+              - 'mysql/init/01_schema.sql'
+              - 'mysql/init/02_seed.sql'
+            mock_sql:
+              - 'mysql/init/03_mock_schema.sql'
+              - 'mysql/init/04_mock_seed.sql'
             mysql_compose:
               - 'docker-compose.yml'
             nginx:
@@ -99,17 +106,30 @@ jobs:
               docker compose --profile prod up -d --wait mysql
             fi
 
-            # SQL 재적용(DROP DATABASE 포함)은 mysql/init/**이 이 push에서 실제로 바뀐 경우에만.
-            # docker-entrypoint-initdb.d는 데이터 볼륨이 비어있을 때 딱 한 번만 실행되므로,
-            # 스키마/시드 변경을 반영하려면 컨테이너가 떠 있는 채로 직접 실행해야 한다.
-            if [ "${{ steps.changes.outputs.mysql }}" = "true" ]; then
-              echo "mysql/init 변경 감지 -> 스키마/시드 재적용"
+            # SQL 재적용(DROP DATABASE 포함)은 각 DB에 관련된 파일이 이 push에서 실제로
+            # 바뀐 경우에만, 그 DB만 골라서 실행한다. docker-entrypoint-initdb.d는 데이터
+            # 볼륨이 비어있을 때 딱 한 번만 실행되므로, 스키마/시드 변경을 반영하려면 컨테이너가
+            # 떠 있는 채로 직접 실행해야 한다.
+            if [ "${{ steps.changes.outputs.benepay_sql }}" = "true" ]; then
+              echo "benepay 스키마/시드(01/02) 변경 감지 -> 재적용"
               docker compose exec -T -e MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql \
                 mysql -uroot < mysql/init/01_schema.sql
               docker compose exec -T -e MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql \
                 mysql -uroot < mysql/init/02_seed.sql
             else
-              echo "mysql/init 변경 없음 -> SQL 재적용 스킵"
+              echo "benepay 스키마/시드 변경 없음 -> 재적용 스킵"
+            fi
+
+            # kb_card_mock은 benepay와 완전히 분리된 스키마/파일(03/04)이라, benepay 변경과
+            # 무관하게 이 파일들이 바뀐 경우에만 독립적으로 재적용한다.
+            if [ "${{ steps.changes.outputs.mock_sql }}" = "true" ]; then
+              echo "kb_card_mock 스키마/시드(03/04) 변경 감지 -> 재적용"
+              docker compose exec -T -e MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql \
+                mysql -uroot < mysql/init/03_mock_schema.sql
+              docker compose exec -T -e MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql \
+                mysql -uroot < mysql/init/04_mock_seed.sql
+            else
+              echo "kb_card_mock 스키마/시드 변경 없음 -> 재적용 스킵"
             fi
 
             # nginx: backend/frontend가 이미 떠 있어야 하는 의존관계라 마지막에 처리.

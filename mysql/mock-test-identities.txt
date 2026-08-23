@@ -1,0 +1,59 @@
+목 카드사 고객(kb_card_mock.mock_customers) 테스트용 원본 신원 정보
+=================================================================
+ci_hash = SHA-256(UTF-8(이름 + 생년월일(YYYYMMDD) + 전화번호))
+Sha256Util.hash / SignupIdentityServiceImpl.buildCiHash와 동일한 공식.
+
+ci_hash는 해시라서 역산이 안 되므로, mock_customers.ci_hash 값만 봐서는
+원본 이름/생년월일/전화번호를 알 수 없다. 회원가입 1단계
+(POST /api/auth/signup/identity)에서 실제로 입력해볼 값이 필요해서 여기에 남겨둔다.
+
+(테스트용) 이 프로젝트는 실제 본인인증기관/카드사 연동이 없는 목데이터 전용
+서비스라, 아래 목록에 없는 임의의 이름/생년월일/전화번호를 넣어도 회원가입이
+막히지 않는다 - Mock Server가 등록된 고객을 못 찾으면 SignupIdentityServiceImpl이
+그 자리에서 Mock Server에 새 고객+무작위 카드를 만들어달라고 요청해서 등록/카드
+자동연동 흐름을 이어간다(KbCardClient.registerCustomer, MockCardServiceImpl.
+registerCustomer 참고). 아래 목록은 그래도 "특정 카드 구성으로 고정해서 테스트
+하고 싶을 때" 쓰면 된다.
+
+이미 BenePay users에 가입되어 있는 계정 (02_seed.sql)
+--------------------------------------------------------
+로그인은 가능하지만(단, login_password_hash가 placeholder라 실제로는
+/login으로 로그인은 불가), 회원가입 1단계는 "이미 가입됨"으로 막힌다.
+
+mock_customer_id  이름    생년월일     전화번호        ci_hash                                                            users.user_id / login_id
+1                 김태희  19990101    01011111111    c063ef653babd2cd73f0520f327516ae9edecf854a40ff70bde2ace0235ae1d0  1 / kimtaehee
+2                 김세영  19990202    01022222222    6a9676b211db326715249ca66cf9c90a92a03b50f54fbc3e57560a1438ac72f4  2 / kimseyoung
+3                 김수민  19990303    01033333333    c4bace98ecff0a501034f8237a9399728eb5956f81325fc3c411e6e2fd33eafe  12 / kimsumin
+
+아직 BenePay users에 가입 안 된 계정 (mock_customers에만 존재)
+--------------------------------------------------------------
+이 7명은 의도적으로 users에 안 넣었다 - 아래 값을 회원가입 1단계에
+그대로 입력하면 "KB 등록 회원 확인"부터 "카드 자동연동"까지 신규가입
+흐름을 처음부터 끝까지 테스트할 수 있다.
+
+mock_customer_id  이름    생년월일     전화번호        ci_hash
+4                 박종현  19990404    01044444444    6503125a553ba5f4845d59a032f633c28ed6db169a36ae0131c47bd223d32d37
+5                 이상준  19990505    01055555555    9eef87e91a685dfd1e522a1cc6c67a9518d4f70dcfd9db7b3ee47c197853eb91
+6                 심혜근  19990606    01066666666    d50448fffce54dd3891757e63f94b6594946597233ce4e84926101834af6f565
+7                 배승호  19990707    01077777777    9824cde6e40495cd14b786cb22a5722be8b8b9bc9759e7af26cc1573e21942af
+8                 정을용  19990808    01088888888    bdffb4cc635b71d041f7356e858a7d6de006e616352d84fd2527ab96e6c99b3f
+9                 김혁준  19990909    01099999999    00c792b9272da8331a8b07fd172e9f9172517a4d421dd2eee1edbdd24204fa2f
+10                김민지  19991010    01010101010    9762937d3570af3e682429fb8dd72510f822398ee91fd2ef4f68461c8c60a25a
+
+회원가입 테스트 예시 (박종현)
+-----------------------------
+POST /api/auth/signup/identity
+{ "name": "박종현", "birthDate": "19990404", "phoneNumber": "01044444444" }
+-> devVerificationCode를 응답에서 그대로 받아서(실제 SMS 게이트웨이가 없어 항상 내려온다)
+
+POST /api/auth/signup/identity/confirm
+{ "phoneNumber": "01044444444", "code": "<devVerificationCode>" }
+-> verificationToken 응답
+
+POST /api/auth/signup
+{ "loginId": "...", "password": "...", "pin": "......", "verificationToken": "<위 토큰>" }
+
+주의: 이 파일과 mysql/init/04_mock_seed.sql의 ci_hash 값이 실제 실행 중인
+mysql 컨테이너 볼륨에 반영되려면, 볼륨을 새로 만들거나(docker compose down -v)
+kb_card_mock.mock_customers를 직접 UPDATE해야 한다 - init 스크립트는 볼륨을
+처음 만들 때 한 번만 실행된다.

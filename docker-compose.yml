@@ -47,6 +47,9 @@ services:
       PORTONE_IMP_KEY: ${PORTONE_IMP_KEY}
       PORTONE_IMP_SECRET: ${PORTONE_IMP_SECRET}
       DI_HASH_SALT: ${DI_HASH_SALT}
+      # card-mock의 호스트 노출 포트는 없고(외부에 노출할 이유가 없는 내부 전용 서비스),
+      # 같은 컴포즈 네트워크 안이라 서비스명:컨테이너 포트(8080)로 접근한다.
+      KB_CARD_BASE_URL: http://card-mock:8080
     depends_on:
       mysql:
         condition: service_healthy
@@ -56,6 +59,23 @@ services:
   frontend:
     image: ghcr.io/kb-pjt-22-1/its-me-frontend:${FRONTEND_IMAGE_TAG:-latest}
     restart: unless-stopped
+
+  # KB 카드사 목 서버. backend의 회원가입 본인확인/카드 자동연동(KbCardClient)이 호출하는
+  # 대상이며, 외부에 노출할 이유가 없어 호스트 포트는 열지 않는다(디버깅용 직접 접근이
+  # 필요하면 로컬의 docker-compose.local.yml처럼 ports를 추가하면 된다).
+  card-mock:
+    image: ghcr.io/kb-pjt-22-1/its-me-card-mock:${CARD_MOCK_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_NAME: kb_card_mock
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      # 컨테이너 네트워크 안에서 backend로 가려면 localhost가 아니라 서비스명으로 접근해야 한다
+      BENEPAY_BASE_URL: http://backend:8080
+    depends_on:
+      mysql:
+        condition: service_healthy
 
   mysql:
     image: mysql:8.4
