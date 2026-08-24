@@ -341,7 +341,7 @@ CREATE TABLE card_monthly_status
         COMMENT '해당 월 총 실적 인정 금액',
 
     updated_at DATETIME NOT NULL
-                                                  DEFAULT CURRENT_TIMESTAMP
+        DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP
         COMMENT '월별 실적 최종 변경 일시',
 
@@ -470,27 +470,39 @@ CREATE TABLE merchants
 -- 저장 매장
 -- =========================================================
 
-CREATE TABLE bookmarked_merchants (
-                                   bookmark_id BIGINT NOT NULL AUTO_INCREMENT,
-                                   user_id BIGINT NOT NULL,
-                                   merchant_id BIGINT NOT NULL,
-                                   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                   is_deleted TINYINT(1) NOT NULL DEFAULT 0,
+CREATE TABLE bookmarked_merchants
+(
+    bookmark_id BIGINT NOT NULL AUTO_INCREMENT
+        COMMENT '북마크 ID',
 
-                                   PRIMARY KEY (bookmark_id),
-                                   UNIQUE KEY UQ_bookmarked_merchants_user_merchant (
-                                       user_id,
-                                       merchant_id
-                                       ),
-                                   KEY IDX_bookmarked_merchants_merchant_id (merchant_id),
+    user_id BIGINT NOT NULL
+        COMMENT '사용자 ID',
 
-                                   CONSTRAINT FK_users_TO_bookmarked_merchants
-                                       FOREIGN KEY (user_id)
-                                           REFERENCES users (user_id),
+    merchant_id BIGINT NOT NULL
+        COMMENT '가맹점 ID',
 
-                                   CONSTRAINT FK_merchants_TO_bookmarked_merchants
-                                       FOREIGN KEY (merchant_id)
-                                           REFERENCES merchants (merchant_id)
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        COMMENT '북마크 등록 일시',
+
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0
+        COMMENT '북마크 해제 여부',
+
+    PRIMARY KEY (bookmark_id),
+
+    UNIQUE KEY UQ_bookmarked_merchants_user_merchant
+        (user_id, merchant_id),
+
+    KEY IDX_bookmarked_merchants_merchant_id
+        (merchant_id),
+
+    CONSTRAINT FK_users_TO_bookmarked_merchants
+        FOREIGN KEY (user_id)
+            REFERENCES users (user_id),
+
+    CONSTRAINT FK_merchants_TO_bookmarked_merchants
+        FOREIGN KEY (merchant_id)
+            REFERENCES merchants (merchant_id)
+
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci;
@@ -751,17 +763,31 @@ CREATE TABLE card_benefit_monthly_usage
 -- 개발·운영 환경별 키 데이터는 별도로 주입
 -- =========================================================
 
-CREATE TABLE encryption_keys (
-                                 key_id BIGINT NOT NULL AUTO_INCREMENT,
-                                 key_alias VARCHAR(50) NOT NULL,
-                                 key_value VARCHAR(255) NOT NULL
-                                     COMMENT 'Base64로 인코딩된 대칭키',
-                                 algorithm VARCHAR(30) NOT NULL DEFAULT 'AES256',
-                                 is_active TINYINT(1) NOT NULL DEFAULT 1,
-                                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE encryption_keys
+(
+    key_id BIGINT NOT NULL AUTO_INCREMENT
+        COMMENT '암호화 키 ID',
 
-                                 PRIMARY KEY (key_id),
-                                 UNIQUE KEY UQ_encryption_keys_key_alias (key_alias)
+    key_alias VARCHAR(50) NOT NULL
+        COMMENT '키 용도 별칭 (예: CI)',
+
+    key_value VARCHAR(255) NOT NULL
+        COMMENT 'Base64로 인코딩된 대칭키',
+
+    algorithm VARCHAR(30) NOT NULL DEFAULT 'AES256'
+        COMMENT '암호화 알고리즘',
+
+    is_active TINYINT(1) NOT NULL DEFAULT 1
+        COMMENT '현재 사용 중인 키 여부',
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        COMMENT '키 등록 일시',
+
+    PRIMARY KEY (key_id),
+
+    UNIQUE KEY UQ_encryption_keys_key_alias
+        (key_alias)
+
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci;
