@@ -154,11 +154,16 @@ jobs:
 
             # nginx: backend/frontend가 이미 떠 있어야 하는 의존관계라 마지막에 처리.
             # 바인드 마운트된 conf 파일 내용 변경은 compose가 자동 감지하지 못하므로 완전히 재기동한다.
+            # --no-deps 필수: 이게 없으면 compose가 depends_on(backend/frontend)까지 같이
+            # 관리 대상에 넣는데, 이 워크플로우는 그 둘을 pull하지 않으므로 로컬에 캐시된
+            # (오래됐을 수 있는) :latest 이미지로 조용히 되돌려버린다 - 2026-08-24 frontend가
+            # 이 때문에 몇 시간 전 이미지로 롤백된 사고가 실제로 있었다. infra-deploy.yml은
+            # nginx/mysql/redis만 책임지므로 backend/frontend는 절대 건드리지 않아야 한다.
             if [ "${{ steps.changes.outputs.nginx == 'true' || inputs.force }}" = "true" ]; then
               echo "nginx 관련 변경 감지 -> 재배포"
               docker compose --profile prod pull nginx
               docker compose --profile prod down nginx
-              docker compose --profile prod up -d --wait nginx
+              docker compose --profile prod up -d --no-deps --wait nginx
             else
               echo "nginx 관련 변경 없음 -> 스킵"
             fi
