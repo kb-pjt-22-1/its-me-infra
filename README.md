@@ -92,8 +92,7 @@ Secret 값을 바꾸면 다음 배포 때 바로 반영되고, 서버에 평문 
 - **이 레포 (EC2 접속)**: `EC2_HOST`, `EC2_USERNAME`, `EC2_SSH_KEY`, `EC2_PORT`, `EC2_APP_DIR`, `GHCR_PAT`, `GHCR_ACTOR`
 - **이 레포 (앱 설정값, `docker-compose.yml`이 참조)**:
   `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `MYSQL_PORT`, `REDIS_PORT`,
-  `CERTBOT_EMAIL`, `JWT_SECRET`, `PORTONE_IMP_KEY`, `PORTONE_IMP_SECRET`, `DI_HASH_SALT`,
-  `OPENAI_API_KEY`, `FIREBASE_CREDENTIALS_JSON`
+  `CERTBOT_EMAIL`, `JWT_SECRET`, `DI_HASH_SALT`, `OPENAI_API_KEY`, `FIREBASE_CREDENTIALS_JSON`
 
   `MYSQL_PORT`/`REDIS_PORT`는 mysql/redis를 host에 노출할 포트 번호입니다. 기본 포트(3306/6379)를
   그대로 안 쓰고 secret으로 관리해서, 자동 스캔으로 뻔한 포트가 바로 발견되는 걸 줄입니다.
