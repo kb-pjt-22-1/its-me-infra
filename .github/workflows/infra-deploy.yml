@@ -40,6 +40,14 @@ jobs:
       MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
       REDIS_PORT: ${{ secrets.REDIS_PORT }}
       CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
+      # nginx는 backend/frontend에 depends_on이 걸려 있어서, nginx만 재기동하려 해도
+      # compose가 backend/frontend까지 같이 관리 대상에 넣는다. 이 세션에 아래 값들이
+      # 없으면 compose가 backend의 설정을 빈 문자열로 계산해서 "설정이 바뀌었다"고
+      # 오판, 진짜 시크릿이 빈 값으로 재기동되는 사고가 난다(2026-08-24 실제 발생).
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      DI_HASH_SALT: ${{ secrets.DI_HASH_SALT }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      FIREBASE_CREDENTIALS_JSON: ${{ secrets.FIREBASE_CREDENTIALS_JSON }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -89,7 +97,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT || 22 }}
-          envs: MYSQL_DATABASE,MYSQL_USER,MYSQL_PASSWORD,MYSQL_ROOT_PASSWORD,MYSQL_PORT,REDIS_PORT,CERTBOT_EMAIL
+          envs: MYSQL_DATABASE,MYSQL_USER,MYSQL_PASSWORD,MYSQL_ROOT_PASSWORD,MYSQL_PORT,REDIS_PORT,CERTBOT_EMAIL,JWT_SECRET,DI_HASH_SALT,OPENAI_API_KEY,FIREBASE_CREDENTIALS_JSON
           script: |
             set -e
             cd ${{ secrets.EC2_APP_DIR }}
