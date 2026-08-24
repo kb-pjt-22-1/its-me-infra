@@ -18,6 +18,12 @@ on:
       - nginx/**
       - mysql/init/**
       - .github/workflows/infra-deploy.yml
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "paths-filter 결과 무시하고 mysql(SQL 재적용 포함)/redis/nginx 전부 강제 재배포"
+        type: boolean
+        default: false
 
 concurrency:
   group: deploy-ec2
@@ -43,8 +49,14 @@ jobs:
       # redis는 전용 파일이 없어서 docker-compose.yml 변경 여부로만 판단한다(오탐 가능, 미탐은 없음).
       - name: Detect which services changed
         id: changes
+        if: github.event_name == 'push'
         uses: dorny/paths-filter@v3
         with:
+          # 머지 커밋으로 push되면 paths-filter가 기본적으로 dev/main 브랜치를 직접
+          # 비교하는데, 머지 직후엔 두 브랜치 트리가 이미 같아져서 diff가 항상 0으로
+          # 나온다(= mysql/redis/nginx가 조용히 스킵됨). base를 이번 push 직전의
+          # main SHA로 고정해서 "이 push로 실제로 뭐가 바뀌었는지"를 비교하게 한다.
+          base: ${{ github.event.before }}
           filters: |
             benepay_sql:
               - 'mysql/init/01_schema.sql'
@@ -83,7 +95,7 @@ jobs:
             cd ${{ secrets.EC2_APP_DIR }}
 
             # redis: 상태 없는 캐시라 완전히 내렸다 올려도 안전.
-            if [ "${{ steps.changes.outputs.redis }}" = "true" ]; then
+            if [ "${{ steps.changes.outputs.redis == 'true' || inputs.force }}" = "true" ]; then
               echo "redis 관련 변경 감지 -> 재배포"
               docker compose --profile prod pull redis
               docker compose --profile prod down redis
@@ -96,7 +108,7 @@ jobs:
             # redis/nginx처럼 down -> up으로 완전히 재기동한다. mysql-data는 named volume이라
             # down으로 컨테이너를 내려도 지워지지 않으므로 데이터는 그대로 유지된다
             # (데이터 초기화는 아래 SQL 재적용 단계가 별도로 담당).
-            if [ "${{ steps.changes.outputs.mysql_compose }}" = "true" ]; then
+            if [ "${{ steps.changes.outputs.mysql_compose == 'true' || inputs.force }}" = "true" ]; then
               echo "docker-compose.yml의 mysql 설정 변경 감지 -> 재배포"
               docker compose --profile prod pull mysql
               docker compose --profile prod down mysql
@@ -110,7 +122,7 @@ jobs:
             # 바뀐 경우에만, 그 DB만 골라서 실행한다. docker-entrypoint-initdb.d는 데이터
             # 볼륨이 비어있을 때 딱 한 번만 실행되므로, 스키마/시드 변경을 반영하려면 컨테이너가
             # 떠 있는 채로 직접 실행해야 한다.
-            if [ "${{ steps.changes.outputs.benepay_sql }}" = "true" ]; then
+            if [ "${{ steps.changes.outputs.benepay_sql == 'true' || inputs.force }}" = "true" ]; then
               echo "benepay 스키마/시드(01/02) 변경 감지 -> 재적용"
               docker compose exec -T -e MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql \
                 mysql -uroot < mysql/init/01_schema.sql
@@ -122,7 +134,7 @@ jobs:
 
             # kb_card_mock은 benepay와 완전히 분리된 스키마/파일(03/04)이라, benepay 변경과
             # 무관하게 이 파일들이 바뀐 경우에만 독립적으로 재적용한다.
-            if [ "${{ steps.changes.outputs.mock_sql }}" = "true" ]; then
+            if [ "${{ steps.changes.outputs.mock_sql == 'true' || inputs.force }}" = "true" ]; then
               echo "kb_card_mock 스키마/시드(03/04) 변경 감지 -> 재적용"
               docker compose exec -T -e MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql \
                 mysql -uroot < mysql/init/03_mock_schema.sql
@@ -134,7 +146,7 @@ jobs:
 
             # nginx: backend/frontend가 이미 떠 있어야 하는 의존관계라 마지막에 처리.
             # 바인드 마운트된 conf 파일 내용 변경은 compose가 자동 감지하지 못하므로 완전히 재기동한다.
-            if [ "${{ steps.changes.outputs.nginx }}" = "true" ]; then
+            if [ "${{ steps.changes.outputs.nginx == 'true' || inputs.force }}" = "true" ]; then
               echo "nginx 관련 변경 감지 -> 재배포"
               docker compose --profile prod pull nginx
               docker compose --profile prod down nginx
