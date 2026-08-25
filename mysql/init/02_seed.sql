@@ -280,9 +280,9 @@ INSERT INTO users
     fcm_token
 )
 VALUES
-    (1, 'kimtaehee', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김태희', '01011111111', '19990101', 'USER', 'di_kimtaehee_0001', 'c063ef653babd2cd73f0520f327516ae9edecf854a40ff70bde2ace0235ae1d0', 'ci_encrypted_kimtaehee_0001', '2026-07-01 10:00:00', FALSE, NULL),
-    (2, 'kimseyoung', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김세영', '01022222222', '19990202', 'USER', 'di_kimseyoung_0002', '6a9676b211db326715249ca66cf9c90a92a03b50f54fbc3e57560a1438ac72f4', 'ci_encrypted_kimseyoung_0002', '2026-07-02 10:00:00', FALSE, NULL),
-    (12, 'kimsumin', '!DEV-ACCOUNT-NO-PASSWORD-LOGIN!', NULL, '김수민', '01033333333', '19990303', 'USER', 'di_kimsumin_0012', 'c4bace98ecff0a501034f8237a9399728eb5956f81325fc3c411e6e2fd33eafe', 'ci_encrypted_kimsumin_0012', '2026-07-03 10:00:00', FALSE, NULL);
+    (1, 'kimtaehee', '$2y$10$t3TRaJVb7S.ArXo.Rq83h.C2Sfgr5iP4EEBofm8OIAUj/sQapXYnS', NULL, '김태희', '01011111111', '19990101', 'USER', 'di_kimtaehee_0001', 'c063ef653babd2cd73f0520f327516ae9edecf854a40ff70bde2ace0235ae1d0', 'ci_encrypted_kimtaehee_0001', '2026-07-01 10:00:00', FALSE, NULL),
+    (2, 'kimseyoung', '$2y$10$12FWI5M7AwBbSLDHyLwk7.Ttqo5xEYTGhf/wG1JLTLAi3djNm2.yS', NULL, '김세영', '01022222222', '19990202', 'USER', 'di_kimseyoung_0002', '6a9676b211db326715249ca66cf9c90a92a03b50f54fbc3e57560a1438ac72f4', 'ci_encrypted_kimseyoung_0002', '2026-07-02 10:00:00', FALSE, NULL),
+    (12, 'kimsumin', '$2y$10$nWJ6CUhuQFJ60O2wNIxWnuqlpsznetXr49R/jBtFvDvm0BWr5jmha', NULL, '김수민', '01033333333', '19990303', 'USER', 'di_kimsumin_0012', 'c4bace98ecff0a501034f8237a9399728eb5956f81325fc3c411e6e2fd33eafe', 'ci_encrypted_kimsumin_0012', '2026-07-03 10:00:00', FALSE, NULL);
 
 INSERT INTO cards (card_id, issuer_product_code, card_name, card_type, card_variant_id, annual_fee, card_image_url, description, is_supported, min_benefit_amount, benefits_info)
 VALUES
