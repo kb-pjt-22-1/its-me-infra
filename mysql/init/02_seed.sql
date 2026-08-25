@@ -44276,6 +44276,20 @@ VALUES
     -- testuser: 스타벅스 강남점(카페) - 첵첵 체크카드, 7월 실적을 2구간 문턱(60만원) 위로 올리는 결제
     (1, 50, '2026-07-18 15:00:00', 374300, 0, 374300, 'APPROVED', 'QR');
 
+-- testuser의 청춘대로 톡톡카드(uc 49) 7월 결제내역을 하나 더 늘린다(패스트푸드,
+-- 홈 화면 "최근 저장" 간편결제 매장과 동일한 맥도날드 을지로1가) - 7월 안에서는
+-- 어차피 6월 실적(27.82만원)이 문턱 미달이라 이 결제에도 혜택은 안 붙는다(discount_amount=0).
+-- 위 실적 문턱용 결제와 마찬가지로 card_monthly_status 7월 합계도 그만큼 같이 올려서
+-- "최근 결제 내역"에 뜨는 금액과 실적 화면 숫자가 어긋나지 않게 한다.
+UPDATE card_monthly_status
+SET total_spending_amount = 340000, updated_at = '2026-07-22 12:30:00'
+WHERE user_card_id = 49 AND target_year_month = '202607';
+
+INSERT INTO payments (merchant_id, user_card_id, payment_time, original_amount, discount_amount, final_amount, payment_status, payment_method)
+VALUES
+    -- testuser: 맥도날드 을지로1가(패스트푸드) - 청춘대로 톡톡카드
+    (25403, 49, '2026-07-22 12:30:00', 20000, 0, 20000, 'APPROVED', 'BARCODE');
+
 -- =========================================================
 -- 어린이대공원역 / 여의도 근처 신규 매장 20개씩 (소상공인시장진흥공단
 -- 상가(상권)정보 2026-03월 공개 데이터, 서울 기준 실제 상호/주소/좌표)
