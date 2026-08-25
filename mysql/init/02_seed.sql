@@ -44227,6 +44227,12 @@ VALUES
 -- user3(직장인)  - On the Go 체크카드(uc 54): 0구간 -> 1구간(30만원 이상)
 -- user4(40대 직장인) - 직장인 보너스 체크카드(uc 63): 0구간 -> 3구간(50만원 이상, 더 큰 폭)
 -- user5(무직)    - 가온체크카드(uc 65): 0구간 -> 1구간(10만원 이상)
+-- testuser       - 청춘대로 톡톡카드(uc 49): 0구간 -> 1구간(30만원 이상)
+--                  첵첵 체크카드(uc 50): 0구간 -> 2구간(60만원 이상)
+--                  NEED Global 카드(uc 51)는 대상에서 뺐다 - 이 카드는 애초에 구간이
+--                  "기본" 하나뿐이고 gracePeriod.available=false, description이 "전월
+--                  이용실적 조건 없이 혜택 제공"이라 전월 실적과 무관하게 항상 혜택이 켜져
+--                  있다 - 실적을 넣어줄 대상이 아니다.
 -- =========================================================
 
 INSERT INTO card_monthly_status (user_card_id, target_year_month, total_spending_amount, updated_at)
@@ -44249,6 +44255,26 @@ VALUES
     (121, 63, '2026-07-08 10:00:00', 550000, 0, 550000, 'APPROVED', 'QR'),
     -- user5: 속초연세센트럴정형외과의원(병원) - 가온체크카드 실적용 단건 결제
     (157, 65, '2026-07-25 11:00:00', 120000, 0, 120000, 'APPROVED', 'BARCODE');
+
+-- testuser는 "-- testuser" 블록(위쪽, INSERT INTO card_monthly_status)에 이미 5~8월
+-- 실적이 시드돼 있었는데, 7월(202607) 실적이 두 카드 다 구간 문턱을 살짝 못 넘겼다
+-- (uc 49 청춘대로 톡톡카드: 282,800원, 1구간 문턱 30만원 / uc 50 첵첵 체크카드: 245,700원,
+-- 2구간 문턱 60만원). 새 행을 또 넣으면 UNIQUE(user_card_id, target_year_month)에 걸리므로,
+-- 그 문턱을 넘기는 결제 1건씩을 7월에 추가하고 기존 7월 합계를 그만큼 올려준다.
+UPDATE card_monthly_status
+SET total_spending_amount = 320000, updated_at = '2026-07-15 23:59:00'
+WHERE user_card_id = 49 AND target_year_month = '202607';
+
+UPDATE card_monthly_status
+SET total_spending_amount = 620000, updated_at = '2026-07-18 23:59:00'
+WHERE user_card_id = 50 AND target_year_month = '202607';
+
+INSERT INTO payments (merchant_id, user_card_id, payment_time, original_amount, discount_amount, final_amount, payment_status, payment_method)
+VALUES
+    -- testuser: 스타벅스 강남점(카페) - 청춘대로 톡톡카드, 7월 실적을 1구간 문턱(30만원) 위로 올리는 결제
+    (1, 49, '2026-07-15 19:00:00', 37200, 0, 37200, 'APPROVED', 'BARCODE'),
+    -- testuser: 스타벅스 강남점(카페) - 첵첵 체크카드, 7월 실적을 2구간 문턱(60만원) 위로 올리는 결제
+    (1, 50, '2026-07-18 15:00:00', 374300, 0, 374300, 'APPROVED', 'QR');
 
 -- =========================================================
 -- 어린이대공원역 / 여의도 근처 신규 매장 20개씩 (소상공인시장진흥공단
