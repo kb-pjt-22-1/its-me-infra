@@ -43016,7 +43016,7 @@ INSERT INTO users
     fcm_token
 )
 VALUES
-    (18, 'testuser', '$2a$10$HjnVTkM8cMke712IpNlovuLprRx5/WznK7Z1GkBwu/uReJGbUhMcS', '$2a$10$Bae7kYQLaGbqZT/bDMXPg.4K9AsJooPj1GQk3P6A2cJrJZ4g2Dx22', '홍길동', '010-1234-5678', '20000101', 'USER', 'dca1e8506b879a6ae86adb26700d38e01c0ba2250a5951a832c05e42a9fac8b9', '2a66ca08fbcb7de4ca268a2841bfbc0ac075d3ce9fabf58da20b45d37d3250f7', '4l5+K8JatZruGFOnIPL3SltVuIEiynpd5FxemGtMHhoYZQaIBQ==', '2026-08-23 22:22:31', FALSE, NULL);
+    (18, 'testuser', '$2a$10$HjnVTkM8cMke712IpNlovuLprRx5/WznK7Z1GkBwu/uReJGbUhMcS', '$2a$10$Bae7kYQLaGbqZT/bDMXPg.4K9AsJooPj1GQk3P6A2cJrJZ4g2Dx22', '김대리', '010-1234-5678', '20000101', 'USER', 'dca1e8506b879a6ae86adb26700d38e01c0ba2250a5951a832c05e42a9fac8b9', '2a66ca08fbcb7de4ca268a2841bfbc0ac075d3ce9fabf58da20b45d37d3250f7', '4l5+K8JatZruGFOnIPL3SltVuIEiynpd5FxemGtMHhoYZQaIBQ==', '2026-08-23 22:22:31', FALSE, NULL);
 
 
 -- =========================================================
